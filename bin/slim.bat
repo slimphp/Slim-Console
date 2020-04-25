@@ -23,7 +23,7 @@ goto run
 goto cleanup
 
 :run
-"%PHP_COMMAND%" -d html_errors=off -qC "%SLIM_HOME%\bin\phinx" %*
+"%PHP_COMMAND%" -d html_errors=off -qC "%SLIM_HOME%\bin\slim" %*
 goto cleanup
 
 :no_phpcommand
@@ -33,7 +33,7 @@ goto init
 
 :err_home
 echo ERROR: Environment var SLIM_HOME not set. Please point this
-echo variable to your local phinx installation!
+echo variable to your local slim installation!
 goto cleanup
 
 :cleanup
