@@ -15,7 +15,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-class Application extends SymfonyApplication {
+class Application extends SymfonyApplication
+{
     private const VERSION = '0.1';
 
     public function __construct()
