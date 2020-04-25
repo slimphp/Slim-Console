@@ -16,9 +16,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 class Application extends SymfonyApplication {
+    private const VERSION = '0.1';
+
     public function __construct()
     {
-        parent::__construct('Slim Console - https://slimframework.com');
+        parent::__construct('Slim Console', self::VERSION);
     }
 
     /**
