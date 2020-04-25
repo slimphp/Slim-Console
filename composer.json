@@ -13,7 +13,9 @@
         }
     ],
     "require": {
-        "php": "^7.2"
+        "php": "^7.2",
+        "symfony/console": "^5.0",
+        "symfony/config": "^5.0"
     },
     "require-dev": {
         "adriansuter/php-autoload-override": "^1.0",
@@ -29,7 +31,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Slim\\Tests\\Console": "tests"
+            "Slim\\Tests\\Console\\": "tests"
         }
     },
     "scripts": {
@@ -44,5 +46,6 @@
     },
     "config": {
         "sort-packages": true
-    }
+    },
+    "bin": ["bin/slim"]
 }
