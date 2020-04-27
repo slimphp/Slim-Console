@@ -38,7 +38,10 @@ class Application extends SymfonyApplication
          * Always show the version information except when the user invokes --help
          * The help command always shows the long version
          */
-        if (($input->hasParameterOption(['--help', '-h']) !== false) || ($input->getFirstArgument() !== null && $input->getFirstArgument() !== 'list')) {
+        if (
+            ($input->hasParameterOption(['--help', '-h']) !== false) ||
+            ($input->getFirstArgument() !== null && $input->getFirstArgument() !== 'list')
+        ) {
             $output->writeln($this->getLongVersion());
             $output->writeln('');
         }
