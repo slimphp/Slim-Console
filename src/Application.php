@@ -32,7 +32,7 @@ class Application extends SymfonyApplication
      *
      * @throws Throwable
      */
-    public function doRun(InputInterface $input, OutputInterface $output)
+    public function doRun(InputInterface $input, OutputInterface $output): int
     {
         /**
          * Always show the version information except when the user invokes --help
