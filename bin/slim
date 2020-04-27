@@ -14,4 +14,5 @@ require __DIR__ . '/../vendor/autoload.php';
 use Slim\Console\Application;
 
 $app = new Application();
+$app->add(new \Slim\Console\Command\HelloworldCommand());
 $app->run();
