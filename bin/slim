@@ -12,7 +12,10 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Slim\Console\Application;
+use Slim\Console\Command\CommandRegistry;
 
 $app = new Application();
-$app->add(new \Slim\Console\Command\HelloworldCommand());
+
+// Register all the commands in the src/Command directory
+CommandRegistry::register($app);
 $app->run();
