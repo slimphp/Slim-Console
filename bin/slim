@@ -9,13 +9,13 @@
 
 declare(strict_types=1);
 
+use Slim\Console\Application;
+
 if (file_exists(__DIR__ . '/../../../autoload.php')) {
     require __DIR__ . '/../../../autoload.php';
 } else {
     require __DIR__ . '/../vendor/autoload.php';
 }
-
-use Slim\Console\Application;
 
 $app = new Application();
 $app->run();
