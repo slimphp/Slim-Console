@@ -1,8 +1,13 @@
 <?php
 
+/**
+ * Slim Framework (https://slimframework.com)
+ *
+ * @license https://github.com/slimphp/Slim-Console/blob/0.x/LICENSE.md (MIT License)
+ */
+
 namespace Slim\Tests\Console\Command;
 
-use Slim\Console\Application;
 use Slim\Console\Command\AbstractCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
