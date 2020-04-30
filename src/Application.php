@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace Slim\Console;
 
+use Slim\Console\Config\Config;
+use Slim\Console\Config\ConfigResolver;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,9 +21,14 @@ class Application extends SymfonyApplication
 {
     private const VERSION = '0.1';
 
-    public function __construct()
+    /** @var Config|null */
+    protected $config;
+
+    public function __construct(string $configDir)
     {
         parent::__construct('Slim Console', self::VERSION);
+
+        $this->setConfig($configDir);
     }
 
     /**
@@ -47,5 +54,15 @@ class Application extends SymfonyApplication
         }
 
         return parent::doRun($input, $output);
+    }
+
+    public function getConfig(): ?Config
+    {
+        return $this->config;
+    }
+
+    public function setConfig(string $configDir): void
+    {
+        $this->config = (new ConfigResolver($configDir))->loadConfig();
     }
 }

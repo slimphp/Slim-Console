@@ -1,0 +1,6 @@
+{
+  "customCommandsPath": "src/Application/Commands",
+  "publicPath": "public/index.php",
+  "srcPath": "src",
+  "bootstrapDir": "app"
+}

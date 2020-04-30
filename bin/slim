@@ -17,5 +17,11 @@ if (file_exists(__DIR__ . '/../../../autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
 }
 
-$app = new Application();
+//Config SHOULD be placed by init command in the project's root directory
+$configDir = dirname(dirname(__DIR__));
+
+$app = new Application($configDir);
+
+//$app->add(new \Slim\Console\Command\InitCommand());
+
 $app->run();
