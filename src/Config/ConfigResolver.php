@@ -14,15 +14,18 @@ use InvalidArgumentException;
 use RuntimeException;
 
 class ConfigResolver {
-    public const FORMAT_PHP = 'PHP';
-    public const FORMAT_JSON = 'JSON';
-    public const FORMAT_YAML = 'YAML';
     public const CONFIG_FILENAME = 'slim-console.config';
 
+    public const FORMAT_PHP = 'php';
+
+    public const FORMAT_JSON = 'json';
+
+    /**
+     * @var string[]
+     */
     protected $supportedFormats = [
         self::FORMAT_PHP,
         self::FORMAT_JSON,
-        //self::FORMAT_YAML,
     ];
 
     /**
@@ -39,6 +42,8 @@ class ConfigResolver {
     }
 
     /**
+     * Resolve configuration. Environment takes precedence over configuration file.
+     *
      * @return Config
      *
      * @throws CannotResolveConfigurationException
@@ -89,7 +94,7 @@ class ConfigResolver {
                 $parsed = require_once $path;
 
                 if (!is_array($parsed)) {
-                    throw new InvalidArgumentException('Slim Console configuration should be an array');
+                    throw new InvalidArgumentException('Slim Console configuration should be an array.');
                 }
 
                 return Config::fromArray($parsed);
@@ -99,15 +104,15 @@ class ConfigResolver {
                 $parsed = json_decode($contents);
 
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new InvalidArgumentException('Invalid JSON parsed from Slim Console configuration');
+                    throw new InvalidArgumentException('Invalid JSON parsed from Slim Console configuration.');
                 } else if (!is_array($parsed)) {
-                    throw new InvalidArgumentException('Slim Console: configuration should be an array');
+                    throw new InvalidArgumentException('Slim Console configuration should be an array.');
                 }
 
                 return Config::fromArray($parsed);
 
             default:
-                throw new RuntimeException("Invalid configuration format: {$format}");
+                throw new RuntimeException("Invalid configuration format `{$format}`.");
         }
     }
 }

@@ -233,17 +233,17 @@ class Config {
         $error = null;
 
         if (!is_string($bootstrapDir) || empty($bootstrapDir)) {
-            $error = '`bootstrapDir` must be a string';
+            $error = '`bootstrapDir` must be a string.';
         } elseif (!is_string($indexDir) || empty($indexDir)) {
-            $error = '`indexDir` must be a string';
+            $error = '`indexDir` must be a string.';
         } elseif (!is_string($indexFile) || empty($indexFile)) {
-            $error = '`indexFile` must be a string';
+            $error = '`indexFile` must be a string.';
         } elseif (!is_string($rootDir) || empty($rootDir)) {
-            $error = '`rootDir` must be a string';
+            $error = '`rootDir` must be a string.';
         } elseif (!is_string($sourceDir) || empty($sourceDir)) {
-            $error = '`sourceDir` must be a string';
+            $error = '`sourceDir` must be a string.';
         } elseif (!empty($commandsDir) && !is_string($commandsDir)) {
-            $error = '`commandsDir` must be a string';
+            $error = '`commandsDir` must be a string.';
         }
 
         if ($error) {
