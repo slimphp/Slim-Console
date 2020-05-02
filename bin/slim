@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-use Slim\Console\Application;
+use Slim\Console\App;
 use Slim\Console\Config\ConfigResolver;
 
 if (file_exists(__DIR__ . '/../../../autoload.php')) {
@@ -20,5 +20,5 @@ if (file_exists(__DIR__ . '/../../../autoload.php')) {
 
 $config = (new ConfigResolver())->resolve();
 
-$app = new Application($config);
+$app = new App($config);
 $app->run();
