@@ -18,7 +18,7 @@ use Throwable;
 
 class App extends SymfonyApplication
 {
-    protected const APPLICATION_NAME = 'Slim Console';
+    protected const NAME = 'Slim Console';
 
     protected const VERSION = '0.1';
 
@@ -32,7 +32,7 @@ class App extends SymfonyApplication
      */
     public function __construct(Config $config)
     {
-        parent::__construct(static::APPLICATION_NAME, static::VERSION);
+        parent::__construct(static::NAME, static::VERSION);
 
         $this->config = $config;
     }
