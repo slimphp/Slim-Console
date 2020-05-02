@@ -69,16 +69,4 @@ class App extends SymfonyApplication
     {
         return $this->config;
     }
-
-    /**
-     * @param Config $config
-     *
-     * @return static
-     */
-    public function setConfig(Config $config)
-    {
-        $this->config = $config;
-
-        return $this;
-    }
 }
