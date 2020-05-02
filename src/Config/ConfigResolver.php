@@ -12,6 +12,7 @@ namespace Slim\Console\Config;
 
 use InvalidArgumentException;
 use RuntimeException;
+use Slim\Console\Exception\CannotResolveConfigurationException;
 
 class ConfigResolver
 {
@@ -105,7 +106,7 @@ class ConfigResolver
                 $parsed = json_decode($contents);
 
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new InvalidArgumentException('Invalid JSON parsed from Slim Console configuration.');
+                    throw new InvalidArgumentException('Invalid JSON parsed from Slim Console configuration. ' . json_last_error_msg());
                 } elseif (!is_array($parsed)) {
                     throw new InvalidArgumentException('Slim Console configuration should be an array.');
                 }
