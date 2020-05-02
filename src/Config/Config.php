@@ -24,7 +24,7 @@ class Config
     /**
      * @var string
      */
-    protected $boostrapDir;
+    protected $bootstrapDir;
 
     /**
      * @var string
@@ -52,7 +52,7 @@ class Config
     protected $commandsDir;
 
     /**
-     * @param string      $boostrapDir
+     * @param string      $bootstrapDir
      * @param string      $indexDir
      * @param string      $indexFile
      * @param string      $rootDir
@@ -60,14 +60,14 @@ class Config
      * @param string|null $commandsDir
      */
     protected function __construct(
-        string $boostrapDir,
+        string $bootstrapDir,
         string $indexDir,
         string $indexFile,
         string $rootDir,
         string $sourceDir,
         ?string $commandsDir = null
     ) {
-        $this->boostrapDir = $boostrapDir;
+        $this->bootstrapDir = $bootstrapDir;
         $this->indexDir = $indexDir;
         $this->indexFile = $indexFile;
         $this->rootDir = $rootDir;
@@ -78,9 +78,9 @@ class Config
     /**
      * @return string
      */
-    public function getBoostrapDir(): string
+    public function getBootstrapDir(): string
     {
-        return $this->boostrapDir;
+        return $this->bootstrapDir;
     }
 
     /**
