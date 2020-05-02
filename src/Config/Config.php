@@ -51,7 +51,6 @@ class Config {
     protected $commandsDir;
 
     /**
-     * Config constructor.
      * @param string      $boostrapDir
      * @param string      $indexDir
      * @param string      $indexFile
@@ -59,7 +58,7 @@ class Config {
      * @param string      $sourceDir
      * @param string|null $commandsDir
      */
-    public function __construct(
+    protected function __construct(
         string $boostrapDir,
         string $indexDir,
         string $indexFile,
@@ -84,35 +83,11 @@ class Config {
     }
 
     /**
-     * @param string $boostrapDir
-     *
-     * @return static
-     */
-    public function setBoostrapDir(string $boostrapDir)
-    {
-        $this->boostrapDir = $boostrapDir;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getIndexDir(): string
     {
         return $this->indexDir;
-    }
-
-    /**
-     * @param string $indexDir
-     *
-     * @return static
-     */
-    public function setIndexDir(string $indexDir)
-    {
-        $this->indexDir = $indexDir;
-
-        return $this;
     }
 
     /**
@@ -124,35 +99,11 @@ class Config {
     }
 
     /**
-     * @param string $indexFile
-     *
-     * @return static
-     */
-    public function setIndexFile(string $indexFile)
-    {
-        $this->indexFile = $indexFile;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getRootDir(): string
     {
         return $this->rootDir;
-    }
-
-    /**
-     * @param string $rootDir
-     *
-     * @return static
-     */
-    public function setRootDir(string $rootDir)
-    {
-        $this->rootDir = $rootDir;
-
-        return $this;
     }
 
     /**
@@ -164,35 +115,11 @@ class Config {
     }
 
     /**
-     * @param string $sourceDir
-     *
-     * @return static
-     */
-    public function setSourceDir(string $sourceDir)
-    {
-        $this->sourceDir = $sourceDir;
-
-        return $this;
-    }
-
-    /**
      * @return string|null
      */
     public function getCommandsDir(): ?string
     {
         return $this->commandsDir;
-    }
-
-    /**
-     * @param string|null $commandsDir
-     *
-     * @return static
-     */
-    public function setCommandsDir(?string $commandsDir)
-    {
-        $this->commandsDir = $commandsDir;
-
-        return $this;
     }
 
     /**
