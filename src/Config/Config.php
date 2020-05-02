@@ -12,7 +12,8 @@ namespace Slim\Console\Config;
 
 use InvalidArgumentException;
 
-class Config {
+class Config
+{
     public const SLIM_CONSOLE_BOOTSTRAP_DIR = 'SLIM_CONSOLE_BOOTSTRAP_DIR';
     public const SLIM_CONSOLE_INDEX_DIR = 'SLIM_CONSOLE_INDEX_DIR';
     public const SLIM_CONSOLE_INDEX_FILE = 'SLIM_CONSOLE_INDEX_FILE';
