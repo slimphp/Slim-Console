@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace Slim\Console\Config;
+namespace Slim\Console\Exception;
 
 use Exception;
 
