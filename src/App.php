@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-class Application extends SymfonyApplication
+class App extends SymfonyApplication
 {
     protected const APPLICATION_NAME = 'Slim Console';
 

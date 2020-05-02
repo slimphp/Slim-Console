@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Slim\Console\Command;
 
 use RuntimeException;
-use Slim\Console\Application;
+use Slim\Console\App;
 use Slim\Console\Config\Config;
 use Symfony\Component\Console\Command\Command;
 
@@ -24,7 +24,7 @@ abstract class AbstractCommand extends Command
     {
         $app = $this->getApplication();
 
-        if ($app instanceof Application === false) {
+        if ($app instanceof App === false) {
             throw new RuntimeException('Cannot call method `getConfig()` on ' . get_class($app));
         }
 
