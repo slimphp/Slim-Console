@@ -22,6 +22,18 @@ class Config
     public const SLIM_CONSOLE_COMMANDS_DIR = 'SLIM_CONSOLE_COMMANDS_DIR';
 
     /**
+     * @var array
+     */
+    protected static $defaults = [
+        'bootstrapDir' => 'app',
+        'indexDir' => 'public',
+        'indexFile' => 'index.php',
+        'rootDir' => null,
+        'sourceDir' => 'src',
+        'commandsDir' => null,
+    ];
+
+    /**
      * @var string
      */
     protected $bootstrapDir;
@@ -126,25 +138,6 @@ class Config
     /**
      * @param array $params
      *
-     * @return array
-     */
-    protected static function mergeDefaults(array $params): array
-    {
-        $defaults = [
-            'bootstrapDir' => 'app',
-            'indexDir' => 'public',
-            'indexFile' => 'index.php',
-            'rootDir' => null,
-            'sourceDir' => 'src',
-            'commandsDir' => null,
-        ];
-
-        return $defaults + $params;
-    }
-
-    /**
-     * @param array $params
-     *
      * @throws InvalidArgumentException
      */
     protected static function validate(array $params): void
@@ -188,7 +181,7 @@ class Config
      */
     public static function fromArray(array $params): Config
     {
-        $params = self::mergeDefaults($params);
+        $params = self::$defaults + $params;
         self::validate($params);
 
         return new self(
@@ -208,7 +201,7 @@ class Config
      */
     public static function fromEnvironment(): Config
     {
-        $params = self::mergeDefaults([
+        return self::fromArray([
             'bootstrapDir' => getenv(self::SLIM_CONSOLE_BOOTSTRAP_DIR),
             'indexDir' => getenv(self::SLIM_CONSOLE_INDEX_DIR),
             'indexFile' => getenv(self::SLIM_CONSOLE_INDEX_FILE),
@@ -216,16 +209,5 @@ class Config
             'sourceDir' => getenv(self::SLIM_CONSOLE_SOURCE_DIR),
             'commandsDir' => getenv(self::SLIM_CONSOLE_COMMANDS_DIR),
         ]);
-
-        self::validate($params);
-
-        return new self(
-            $params['bootstrapDir'],
-            $params['indexDir'],
-            $params['indexFile'],
-            $params['rootDir'],
-            $params['sourceDir'],
-            $params['commandsDir']
-        );
     }
 }
