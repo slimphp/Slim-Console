@@ -12,6 +12,8 @@ namespace Slim\Console\Config;
 
 use InvalidArgumentException;
 use RuntimeException;
+use Slim\Console\Config\Parser\JSONConfigParser;
+use Slim\Console\Config\Parser\PHPConfigParser;
 use Slim\Console\Exception\CannotResolveConfigException;
 
 class ConfigResolver
@@ -93,25 +95,10 @@ class ConfigResolver
     {
         switch ($format) {
             case self::FORMAT_PHP:
-                $parsed = require $path;
-
-                if (!is_array($parsed)) {
-                    throw new InvalidArgumentException('Slim Console configuration should be an array.');
-                }
-
-                return Config::fromArray($parsed);
+                return (new PHPConfigParser($path))->parse();
 
             case self::FORMAT_JSON:
-                $contents = file_get_contents($path);
-                $parsed = json_decode($contents);
-
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new InvalidArgumentException('Invalid JSON parsed from Slim Console configuration. ' . json_last_error_msg());
-                } elseif (!is_array($parsed)) {
-                    throw new InvalidArgumentException('Slim Console configuration should be an array.');
-                }
-
-                return Config::fromArray($parsed);
+                return (new JSONConfigParser($path))->parse();
 
             default:
                 throw new RuntimeException("Invalid configuration format `{$format}`.");
