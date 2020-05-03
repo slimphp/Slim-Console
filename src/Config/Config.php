@@ -182,6 +182,7 @@ class Config
     public static function fromArray(array $params): Config
     {
         $params = self::$defaults + $params;
+
         self::validate($params);
 
         return new self(
