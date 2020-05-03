@@ -12,7 +12,7 @@ namespace Slim\Console\Config;
 
 use InvalidArgumentException;
 use RuntimeException;
-use Slim\Console\Exception\CannotResolveConfigurationException;
+use Slim\Console\Exception\CannotResolveConfigException;
 
 class ConfigResolver
 {
@@ -48,7 +48,7 @@ class ConfigResolver
      *
      * @return Config
      *
-     * @throws CannotResolveConfigurationException
+     * @throws CannotResolveConfigException
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
@@ -57,27 +57,27 @@ class ConfigResolver
         try {
             return Config::fromEnvironment();
         } catch (InvalidArgumentException $e) {
-            return $this->attemptResolvingConfigurationFromSupportedFormats();
+            return $this->attemptResolvingConfigFromSupportedFormats();
         }
     }
 
     /**
      * @return Config
      *
-     * @throws CannotResolveConfigurationException
+     * @throws CannotResolveConfigException
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    protected function attemptResolvingConfigurationFromSupportedFormats(): Config
+    protected function attemptResolvingConfigFromSupportedFormats(): Config
     {
         foreach ($this->supportedFormats as $format) {
             $path = $this->rootDir . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME . ".{$format}";
             if (file_exists($path)) {
-                return $this->attemptParsingConfigurationFromFile($path, $format);
+                return $this->attemptParsingConfigFromFile($path, $format);
             }
         }
 
-        throw new CannotResolveConfigurationException();
+        throw new CannotResolveConfigException();
     }
 
     /**
@@ -89,7 +89,7 @@ class ConfigResolver
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    protected function attemptParsingConfigurationFromFile(string $path, string $format): Config
+    protected function attemptParsingConfigFromFile(string $path, string $format): Config
     {
         switch ($format) {
             case self::FORMAT_PHP:

@@ -12,7 +12,7 @@ namespace Slim\Console\Exception;
 
 use Exception;
 
-class CannotResolveConfigurationException extends Exception
+class CannotResolveConfigException extends Exception
 {
     public $message = 'Cannot resolve Slim Console configuration file.';
 }
