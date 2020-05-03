@@ -93,7 +93,7 @@ class ConfigResolver
     {
         switch ($format) {
             case self::FORMAT_PHP:
-                $parsed = require_once $path;
+                $parsed = require $path;
 
                 if (!is_array($parsed)) {
                     throw new InvalidArgumentException('Slim Console configuration should be an array.');
