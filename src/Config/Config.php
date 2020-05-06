@@ -17,7 +17,6 @@ class Config
     public const SLIM_CONSOLE_BOOTSTRAP_DIR = 'SLIM_CONSOLE_BOOTSTRAP_DIR';
     public const SLIM_CONSOLE_INDEX_DIR = 'SLIM_CONSOLE_INDEX_DIR';
     public const SLIM_CONSOLE_INDEX_FILE = 'SLIM_CONSOLE_INDEX_FILE';
-    public const SLIM_CONSOLE_ROOT_DIR = 'SLIM_CONSOLE_ROOT_DIR';
     public const SLIM_CONSOLE_SOURCE_DIR = 'SLIM_CONSOLE_SOURCE_DIR';
     public const SLIM_CONSOLE_COMMANDS_DIR = 'SLIM_CONSOLE_COMMANDS_DIR';
 
@@ -28,9 +27,8 @@ class Config
         'bootstrapDir' => 'app',
         'indexDir' => 'public',
         'indexFile' => 'index.php',
-        'rootDir' => null,
         'sourceDir' => 'src',
-        'commandsDir' => null,
+        'commandsDir' => 'src/Application/Console/Commands',
     ];
 
     /**
@@ -51,11 +49,6 @@ class Config
     /**
      * @var string
      */
-    protected $rootDir;
-
-    /**
-     * @var string
-     */
     protected $sourceDir;
 
     /**
@@ -67,7 +60,6 @@ class Config
      * @param string      $bootstrapDir
      * @param string      $indexDir
      * @param string      $indexFile
-     * @param string      $rootDir
      * @param string      $sourceDir
      * @param string|null $commandsDir
      */
@@ -75,14 +67,12 @@ class Config
         string $bootstrapDir,
         string $indexDir,
         string $indexFile,
-        string $rootDir,
         string $sourceDir,
         ?string $commandsDir = null
     ) {
         $this->bootstrapDir = $bootstrapDir;
         $this->indexDir = $indexDir;
         $this->indexFile = $indexFile;
-        $this->rootDir = $rootDir;
         $this->sourceDir = $sourceDir;
         $this->commandsDir = $commandsDir;
     }
@@ -114,14 +104,6 @@ class Config
     /**
      * @return string
      */
-    public function getRootDir(): string
-    {
-        return $this->rootDir;
-    }
-
-    /**
-     * @return string
-     */
     public function getSourceDir(): string
     {
         return $this->sourceDir;
@@ -146,29 +128,28 @@ class Config
             'bootstrapDir' => $bootstrapDir,
             'indexDir' => $indexDir,
             'indexFile' => $indexFile,
-            'rootDir' => $rootDir,
             'sourceDir' => $sourceDir,
             'commandsDir' => $commandsDir,
         ] = $params;
 
-        $error = null;
-
         if (!is_string($bootstrapDir) || empty($bootstrapDir)) {
-            $error = '`bootstrapDir` must be a string.';
-        } elseif (!is_string($indexDir) || empty($indexDir)) {
-            $error = '`indexDir` must be a string.';
-        } elseif (!is_string($indexFile) || empty($indexFile)) {
-            $error = '`indexFile` must be a string.';
-        } elseif (!is_string($rootDir) || empty($rootDir)) {
-            $error = '`rootDir` must be a string.';
-        } elseif (!is_string($sourceDir) || empty($sourceDir)) {
-            $error = '`sourceDir` must be a string.';
-        } elseif (!empty($commandsDir) && !is_string($commandsDir)) {
-            $error = '`commandsDir` must be a string.';
+            throw new InvalidArgumentException('`bootstrapDir` must be a string.');
         }
 
-        if ($error) {
-            throw new InvalidArgumentException($error);
+        if (!is_string($indexDir) || empty($indexDir)) {
+            throw new InvalidArgumentException('`indexDir` must be a string.');
+        }
+
+        if (!is_string($indexFile) || empty($indexFile)) {
+            throw new InvalidArgumentException('`indexFile` must be a string.');
+        }
+
+        if (!is_string($sourceDir) || empty($sourceDir)) {
+            throw new InvalidArgumentException('`sourceDir` must be a string.');
+        }
+
+        if (!empty($commandsDir) && !is_string($commandsDir)) {
+            throw new InvalidArgumentException('`commandsDir` must be a string.');
         }
     }
 
@@ -189,7 +170,6 @@ class Config
             $params['bootstrapDir'],
             $params['indexDir'],
             $params['indexFile'],
-            $params['rootDir'],
             $params['sourceDir'],
             $params['commandsDir']
         );
@@ -206,7 +186,6 @@ class Config
             'bootstrapDir' => getenv(self::SLIM_CONSOLE_BOOTSTRAP_DIR),
             'indexDir' => getenv(self::SLIM_CONSOLE_INDEX_DIR),
             'indexFile' => getenv(self::SLIM_CONSOLE_INDEX_FILE),
-            'rootDir' => getenv(self::SLIM_CONSOLE_ROOT_DIR),
             'sourceDir' => getenv(self::SLIM_CONSOLE_SOURCE_DIR),
             'commandsDir' => getenv(self::SLIM_CONSOLE_COMMANDS_DIR),
         ]);
