@@ -72,8 +72,10 @@ class ConfigResolver
      */
     protected function attemptResolvingConfigFromSupportedFormats(): Config
     {
+        $basePath = $this->rootDir . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+
         foreach ($this->supportedFormats as $format) {
-            $path = $this->rootDir . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME . ".{$format}";
+            $path = $basePath . ".{$format}";
             if (file_exists($path)) {
                 return $this->attemptParsingConfigFromFile($path, $format);
             }
