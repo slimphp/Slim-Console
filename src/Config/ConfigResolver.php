@@ -35,14 +35,14 @@ class ConfigResolver
     /**
      * @var string
      */
-    protected $rootDir;
+    protected $cwd;
 
     /**
-     * @param string $rootDir
+     * @param string $cwd
      */
-    public function __construct(string $rootDir)
+    public function __construct(string $cwd)
     {
-        $this->rootDir = $rootDir;
+        $this->cwd = $cwd;
     }
 
     /**
@@ -50,7 +50,6 @@ class ConfigResolver
      *
      * @return Config
      *
-     * @throws CannotResolveConfigException
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
@@ -59,7 +58,11 @@ class ConfigResolver
         try {
             return Config::fromEnvironment();
         } catch (InvalidArgumentException $e) {
-            return $this->attemptResolvingConfigFromSupportedFormats();
+            try {
+                return $this->attemptResolvingConfigFromSupportedFormats();
+            } catch (CannotResolveConfigException $e) {
+                return Config::fromDefaults();
+            }
         }
     }
 
@@ -72,7 +75,7 @@ class ConfigResolver
      */
     protected function attemptResolvingConfigFromSupportedFormats(): Config
     {
-        $basePath = $this->rootDir . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+        $basePath = $this->cwd . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
 
         foreach ($this->supportedFormats as $format) {
             $path = $basePath . ".{$format}";
