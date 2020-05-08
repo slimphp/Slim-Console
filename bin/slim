@@ -12,13 +12,15 @@ declare(strict_types=1);
 use Slim\Console\App;
 use Slim\Console\Config\ConfigResolver;
 
+$cwd = getcwd();
+
 if (file_exists(__DIR__ . '/../../../autoload.php')) {
     require __DIR__ . '/../../../autoload.php';
 } else {
     require __DIR__ . '/../vendor/autoload.php';
 }
 
-$config = (new ConfigResolver())->resolve();
+$config = (new ConfigResolver($cwd))->resolve();
 
 $app = new App($config);
 $app->run();
