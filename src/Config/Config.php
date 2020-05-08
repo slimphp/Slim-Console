@@ -190,4 +190,20 @@ class Config
             'commandsDir' => getenv(self::SLIM_CONSOLE_COMMANDS_DIR),
         ]);
     }
+
+    /**
+     * @return Config
+     *
+     * @throws InvalidArgumentException
+     */
+    public static function fromDefaults(): Config
+    {
+        return new self(
+            self::$defaults['bootstrapDir'],
+            self::$defaults['indexDir'],
+            self::$defaults['indexFile'],
+            self::$defaults['sourceDir'],
+            self::$defaults['commandsDir']
+        );
+    }
 }
