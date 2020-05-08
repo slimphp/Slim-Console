@@ -22,7 +22,7 @@ class JSONConfigParser implements ConfigParserInterface
      */
     public static function parse(string $path): Config
     {
-        $contents = file_get_contents($path);
+        $contents = (string) file_get_contents($path);
         $parsed = json_decode($contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {

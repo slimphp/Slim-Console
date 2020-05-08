@@ -19,13 +19,15 @@ abstract class AbstractCommand extends Command
 {
     /**
      * @return Config|null
+     *
+     * @throws RuntimeException
      */
     public function getConfig(): ?Config
     {
         $app = $this->getApplication();
 
         if ($app instanceof App === false) {
-            throw new RuntimeException('Cannot call method `getConfig()` on ' . get_class($app));
+            throw new RuntimeException('Method method `getConfig()` does not exist on this type of application.');
         }
 
         return $app->getConfig();
