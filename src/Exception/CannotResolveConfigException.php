@@ -14,5 +14,8 @@ use Exception;
 
 class CannotResolveConfigException extends Exception
 {
+    /**
+     * @var string
+     */
     public $message = 'Cannot resolve Slim Console configuration file.';
 }

@@ -154,7 +154,7 @@ class Config
     }
 
     /**
-     * @param array $params
+     * @param array<mixed> $params
      *
      * @return Config
      *
