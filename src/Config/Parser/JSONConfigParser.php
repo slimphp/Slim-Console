@@ -13,15 +13,17 @@ namespace Slim\Console\Config\Parser;
 use InvalidArgumentException;
 use Slim\Console\Config\Config;
 
-class JSONConfigParser extends AbstractConfigParser
+class JSONConfigParser implements ConfigParserInterface
 {
     /**
+     * @param string $path
+     *
      * @return Config
      */
-    public function parse(): Config
+    public static function parse(string $path): Config
     {
-        $contents = file_get_contents($this->path);
-        $parsed = json_decode($contents);
+        $contents = file_get_contents($path);
+        $parsed = json_decode($contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new InvalidArgumentException(

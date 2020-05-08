@@ -56,14 +56,34 @@ class ConfigResolver
     public function resolve(): Config
     {
         try {
-            return Config::fromEnvironment();
-        } catch (InvalidArgumentException $e) {
+            return $this->attemptResolvingConfigFromEnvironment();
+        } catch (CannotResolveConfigException $e) {
             try {
                 return $this->attemptResolvingConfigFromSupportedFormats();
             } catch (CannotResolveConfigException $e) {
                 return Config::fromDefaults();
             }
         }
+    }
+
+    /**
+     * @return Config
+     *
+     * @throws CannotResolveConfigException
+     */
+    protected function attemptResolvingConfigFromEnvironment(): Config
+    {
+        if (
+            getenv(Config::SLIM_CONSOLE_BOOTSTRAP_DIR)
+            || getenv(Config::SLIM_CONSOLE_COMMANDS_DIR)
+            || getenv(Config::SLIM_CONSOLE_INDEX_DIR)
+            || getenv(Config::SLIM_CONSOLE_INDEX_FILE)
+            || getenv(Config::SLIM_CONSOLE_SOURCE_DIR)
+        ) {
+            return Config::fromEnvironment();
+        }
+
+        throw new CannotResolveConfigException();
     }
 
     /**
@@ -100,10 +120,10 @@ class ConfigResolver
     {
         switch ($format) {
             case self::FORMAT_PHP:
-                return (new PHPConfigParser($path))->parse();
+                return PHPConfigParser::parse($path);
 
             case self::FORMAT_JSON:
-                return (new JSONConfigParser($path))->parse();
+                return JSONConfigParser::parse($path);
 
             default:
                 throw new RuntimeException("Invalid configuration format `{$format}`.");

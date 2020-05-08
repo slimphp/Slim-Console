@@ -13,14 +13,16 @@ namespace Slim\Console\Config\Parser;
 use InvalidArgumentException;
 use Slim\Console\Config\Config;
 
-class PHPConfigParser extends AbstractConfigParser
+class PHPConfigParser implements ConfigParserInterface
 {
     /**
+     * @param string $path
+     *
      * @return Config
      */
-    public function parse(): Config
+    public static function parse(string $path): Config
     {
-        $parsed = require $this->path;
+        $parsed = require $path;
 
         if (!is_array($parsed)) {
             throw new InvalidArgumentException('Slim Console configuration should be an array.');

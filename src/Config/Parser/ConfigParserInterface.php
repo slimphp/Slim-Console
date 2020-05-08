@@ -16,9 +16,11 @@ use Slim\Console\Config\Config;
 interface ConfigParserInterface
 {
     /**
+     * @param string $path
+     *
      * @return Config
      *
      * @throws InvalidArgumentException
      */
-    public function parse(): Config;
+    public static function parse(string $path): Config;
 }
