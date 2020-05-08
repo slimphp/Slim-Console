@@ -56,7 +56,10 @@ class ConfigResolverTest extends TestCase
      */
     public function testAttemptResolvingConfigFromSupportedFormats(string $format, Closure $parser): void
     {
-        $example = $parser($this->getExampleConfigPath($format) . DIRECTORY_SEPARATOR . ConfigResolver::CONFIG_FILENAME . '.' . $format);
+        $configPath = $this->getExampleConfigPath($format)
+            . DIRECTORY_SEPARATOR
+            . ConfigResolver::CONFIG_FILENAME . '.' . $format;
+        $example = $parser($configPath);
 
         $exampleConfigPath = $this->getExampleConfigPath($format);
         $configResolver = new ConfigResolver($exampleConfigPath);
@@ -72,7 +75,10 @@ class ConfigResolverTest extends TestCase
 
     public function testAttemptParsingConfigFromFileThrowsRuntimeException(): void
     {
-        $attemptParsingConfigFromFileMethod = new ReflectionMethod(ConfigResolver::class, 'attemptParsingConfigFromFile');
+        $attemptParsingConfigFromFileMethod = new ReflectionMethod(
+            ConfigResolver::class,
+            'attemptParsingConfigFromFile'
+        );
         $attemptParsingConfigFromFileMethod->setAccessible(true);
 
         $invalidFormat = 'invalid';

@@ -20,7 +20,9 @@ class PHPConfigParserTest extends TestCase
     public function testParse(): void
     {
         $exampleJsonConfigPath = $this->getExampleConfigPath(ConfigResolver::FORMAT_PHP);
-        $phpConfigPath = $exampleJsonConfigPath . DIRECTORY_SEPARATOR . ConfigResolver::CONFIG_FILENAME . '.' . ConfigResolver::FORMAT_PHP;
+        $phpConfigPath = $exampleJsonConfigPath
+            . DIRECTORY_SEPARATOR
+            . ConfigResolver::CONFIG_FILENAME . '.' . ConfigResolver::FORMAT_PHP;
         $phpConfig = require $phpConfigPath;
 
         $config = PHPConfigParser::parse($phpConfigPath);
@@ -34,7 +36,9 @@ class PHPConfigParserTest extends TestCase
 
     public function testParseThrowsInvalidArgumentException(): void
     {
-        $invalidJsonConfigPath = $this->examplesConfigBasePath . DIRECTORY_SEPARATOR . 'invalid-php' . DIRECTORY_SEPARATOR . 'invalid-format.php';
+        $invalidJsonConfigPath = $this->examplesConfigBasePath
+            . DIRECTORY_SEPARATOR . 'invalid-php'
+            . DIRECTORY_SEPARATOR . 'invalid-format.php';
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Slim Console configuration should be an array.');

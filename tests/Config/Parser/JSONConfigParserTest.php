@@ -28,7 +28,9 @@ class JSONConfigParserTest extends TestCase
     public function testParse(): void
     {
         $exampleJsonConfigPath = $this->getExampleConfigPath(ConfigResolver::FORMAT_JSON);
-        $jsonConfigPath = $exampleJsonConfigPath . DIRECTORY_SEPARATOR . ConfigResolver::CONFIG_FILENAME . '.' . ConfigResolver::FORMAT_JSON;
+        $jsonConfigPath = $exampleJsonConfigPath
+            . DIRECTORY_SEPARATOR
+            . ConfigResolver::CONFIG_FILENAME . '.' . ConfigResolver::FORMAT_JSON;
         $jsonConfig = json_decode(file_get_contents($jsonConfigPath), true);
 
         $config = JSONConfigParser::parse($jsonConfigPath);
@@ -48,7 +50,9 @@ class JSONConfigParserTest extends TestCase
      */
     public function testParseThrowsInvalidArgumentException(string $fileName, string $expectedExceptionMessage): void
     {
-        $invalidJsonConfigPath = $this->examplesConfigBasePath . DIRECTORY_SEPARATOR . 'invalid-json' . DIRECTORY_SEPARATOR . $fileName;
+        $invalidJsonConfigPath = $this->examplesConfigBasePath
+            . DIRECTORY_SEPARATOR . 'invalid-json'
+            . DIRECTORY_SEPARATOR . $fileName;
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectedExceptionMessage);
