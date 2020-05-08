@@ -29,7 +29,9 @@ class JSONConfigParser implements ConfigParserInterface
             throw new InvalidArgumentException(
                 'Invalid JSON parsed from Slim Console configuration. ' . json_last_error_msg()
             );
-        } elseif (!is_array($parsed)) {
+        }
+
+        if (!is_array($parsed)) {
             throw new InvalidArgumentException('Slim Console configuration should be an array.');
         }
 

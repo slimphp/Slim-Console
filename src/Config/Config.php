@@ -132,23 +132,23 @@ class Config
             'commandsDir' => $commandsDir,
         ] = $params;
 
-        if (!is_string($bootstrapDir) || empty($bootstrapDir)) {
+        if (!is_string($bootstrapDir) || empty($bootstrapDir) || ctype_space($bootstrapDir)) {
             throw new InvalidArgumentException('`bootstrapDir` must be a string.');
         }
 
-        if (!is_string($indexDir) || empty($indexDir)) {
+        if (!is_string($indexDir) || empty($indexDir) || ctype_space($indexDir)) {
             throw new InvalidArgumentException('`indexDir` must be a string.');
         }
 
-        if (!is_string($indexFile) || empty($indexFile)) {
+        if (!is_string($indexFile) || empty($indexFile) || ctype_space($indexFile)) {
             throw new InvalidArgumentException('`indexFile` must be a string.');
         }
 
-        if (!is_string($sourceDir) || empty($sourceDir)) {
+        if (!is_string($sourceDir) || empty($sourceDir) || ctype_space($sourceDir)) {
             throw new InvalidArgumentException('`sourceDir` must be a string.');
         }
 
-        if (!empty($commandsDir) && !is_string($commandsDir)) {
+        if (!empty($commandsDir) && (!is_string($commandsDir) || ctype_space($commandsDir))) {
             throw new InvalidArgumentException('`commandsDir` must be a string.');
         }
     }
@@ -162,7 +162,7 @@ class Config
      */
     public static function fromArray(array $params): Config
     {
-        $params = self::$defaults + $params;
+        $params = array_merge(self::$defaults, $params);
 
         self::validate($params);
 
@@ -193,8 +193,6 @@ class Config
 
     /**
      * @return Config
-     *
-     * @throws InvalidArgumentException
      */
     public static function fromDefaults(): Config
     {
