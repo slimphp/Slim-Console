@@ -44,14 +44,4 @@ class MockCommand extends AbstractCommand
     {
         return $this->output;
     }
-
-    /**
-     * @param string $output
-     * @return self
-     */
-    public function setMockOutput(string $output): self
-    {
-        $this->output = $output;
-        return $this;
-    }
 }
