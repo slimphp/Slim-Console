@@ -10,10 +10,10 @@ declare(strict_types=1);
 
 namespace Slim\Console\Config;
 
-use InvalidArgumentException;
 use RuntimeException;
 use Slim\Console\Config\Parser\JSONConfigParser;
 use Slim\Console\Config\Parser\PHPConfigParser;
+use Slim\Console\Exception\CannotParseConfigException;
 use Slim\Console\Exception\CannotResolveConfigException;
 
 class ConfigResolver
@@ -33,33 +33,22 @@ class ConfigResolver
     ];
 
     /**
-     * @var string
-     */
-    protected $cwd;
-
-    /**
-     * @param string $cwd
-     */
-    public function __construct(string $cwd)
-    {
-        $this->cwd = $cwd;
-    }
-
-    /**
      * Resolve configuration. Environment takes precedence over configuration file.
+     *
+     * @param string $dir
      *
      * @return Config
      *
-     * @throws InvalidArgumentException
+     * @throws CannotParseConfigException
      * @throws RuntimeException
      */
-    public function resolve(): Config
+    public function resolve(string $dir): Config
     {
         try {
             return $this->attemptResolvingConfigFromEnvironment();
         } catch (CannotResolveConfigException $e) {
             try {
-                return $this->attemptResolvingConfigFromSupportedFormats();
+                return $this->attemptResolvingConfigFromSupportedFormats($dir);
             } catch (CannotResolveConfigException $e) {
                 return Config::fromDefaults();
             }
@@ -74,11 +63,11 @@ class ConfigResolver
     protected function attemptResolvingConfigFromEnvironment(): Config
     {
         if (
-            getenv(Config::SLIM_CONSOLE_BOOTSTRAP_DIR)
-            || getenv(Config::SLIM_CONSOLE_COMMANDS_DIR)
-            || getenv(Config::SLIM_CONSOLE_INDEX_DIR)
-            || getenv(Config::SLIM_CONSOLE_INDEX_FILE)
-            || getenv(Config::SLIM_CONSOLE_SOURCE_DIR)
+            is_string(getenv(Config::SLIM_CONSOLE_BOOTSTRAP_DIR))
+            || is_string(getenv(Config::SLIM_CONSOLE_COMMANDS_DIR))
+            || is_string(getenv(Config::SLIM_CONSOLE_INDEX_DIR))
+            || is_string(getenv(Config::SLIM_CONSOLE_INDEX_FILE))
+            || is_string(getenv(Config::SLIM_CONSOLE_SOURCE_DIR))
         ) {
             return Config::fromEnvironment();
         }
@@ -87,15 +76,18 @@ class ConfigResolver
     }
 
     /**
+     * @param string|null $dir
+     *
      * @return Config
      *
      * @throws CannotResolveConfigException
-     * @throws InvalidArgumentException
+     * @throws CannotParseConfigException
      * @throws RuntimeException
      */
-    protected function attemptResolvingConfigFromSupportedFormats(): Config
+    protected function attemptResolvingConfigFromSupportedFormats(string $dir = null): Config
     {
-        $basePath = $this->cwd . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+        $dir = $dir ?? getcwd();
+        $basePath = $dir . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
 
         foreach ($this->supportedFormats as $format) {
             $path = $basePath . ".{$format}";
@@ -113,7 +105,7 @@ class ConfigResolver
      *
      * @return Config
      *
-     * @throws InvalidArgumentException
+     * @throws CannotParseConfigException
      * @throws RuntimeException
      */
     protected function attemptParsingConfigFromFile(string $path, string $format): Config

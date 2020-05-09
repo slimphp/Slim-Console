@@ -16,9 +16,7 @@ use Slim\Console\Config\Config;
 class JSONConfigParser implements ConfigParserInterface
 {
     /**
-     * @param string $path
-     *
-     * @return Config
+     * {@inheritdoc}
      */
     public static function parse(string $path): Config
     {
