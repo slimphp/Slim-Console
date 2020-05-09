@@ -27,7 +27,9 @@ abstract class AbstractCommand extends Command
         $app = $this->getApplication();
 
         if ($app instanceof App === false) {
-            throw new RuntimeException('Method method `getConfig()` does not exist on this type of application.');
+            throw new RuntimeException(
+                'Usage of the method `getConfig()` requires the parent application to be a Slim Console Application.'
+            );
         }
 
         return $app->getConfig();
