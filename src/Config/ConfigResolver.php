@@ -99,7 +99,7 @@ class ConfigResolver
 
         foreach ($this->supportedFormats as $format) {
             $path = $basePath . ".{$format}";
-            if (file_exists($path)) {
+            if (file_exists($path) && is_readable($path)) {
                 return $this->attemptParsingConfigFromFile($path, $format);
             }
         }
