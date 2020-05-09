@@ -35,7 +35,9 @@ class AbstractCommandTest extends TestCase
         $mockCommand = new MockCommand();
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Method method `getConfig()` does not exist on this type of application.');
+        $this->expectExceptionMessage(
+            'Usage of the method `getConfig()` requires the parent application to be a Slim Console Application.'
+        );
 
         $mockCommand->getConfig();
     }

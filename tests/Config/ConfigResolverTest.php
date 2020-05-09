@@ -37,9 +37,9 @@ class ConfigResolverTest extends TestCase
         $this->setupEnvConfig();
 
         $exampleJsonConfigPath = $this->getExampleConfigPath(ConfigResolver::FORMAT_JSON);
-        $configResolver = new ConfigResolver($exampleJsonConfigPath);
+        $configResolver = new ConfigResolver();
 
-        $config = $configResolver->resolve();
+        $config = $configResolver->resolve($exampleJsonConfigPath);
 
         $this->assertSame($this->envParams['bootstrapDir'], $config->getBootstrapDir());
         $this->assertSame($this->envParams['commandsDir'], $config->getCommandsDir());
@@ -62,9 +62,9 @@ class ConfigResolverTest extends TestCase
         $example = $parser($configPath);
 
         $exampleConfigPath = $this->getExampleConfigPath($format);
-        $configResolver = new ConfigResolver($exampleConfigPath);
+        $configResolver = new ConfigResolver();
 
-        $config = $configResolver->resolve();
+        $config = $configResolver->resolve($exampleConfigPath);
 
         $this->assertSame($example['bootstrapDir'], $config->getBootstrapDir());
         $this->assertSame($example['commandsDir'], $config->getCommandsDir());
@@ -86,7 +86,7 @@ class ConfigResolverTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage("Invalid configuration format `{$invalidFormat}`.");
 
-        $configResolver = new ConfigResolver($this->examplesConfigBasePath);
+        $configResolver = new ConfigResolver();
 
         $attemptParsingConfigFromFileMethod->invoke($configResolver, $this->examplesConfigBasePath, $invalidFormat);
     }
@@ -98,8 +98,8 @@ class ConfigResolverTest extends TestCase
 
         $defaults = $defaultsReflection->getValue();
 
-        $configResolver = new ConfigResolver($this->examplesConfigBasePath);
-        $config = $configResolver->resolve();
+        $configResolver = new ConfigResolver();
+        $config = $configResolver->resolve($this->examplesConfigBasePath);
 
         $this->assertSame($defaults['bootstrapDir'], $config->getBootstrapDir());
         $this->assertSame($defaults['commandsDir'], $config->getCommandsDir());

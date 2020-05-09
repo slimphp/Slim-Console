@@ -10,9 +10,9 @@ declare(strict_types=1);
 
 namespace Slim\Tests\Console\Config\Parser;
 
-use InvalidArgumentException;
 use Slim\Console\Config\ConfigResolver;
 use Slim\Console\Config\Parser\PHPConfigParser;
+use Slim\Console\Exception\CannotParseConfigException;
 use Slim\Tests\Console\TestCase;
 
 class PHPConfigParserTest extends TestCase
@@ -34,13 +34,13 @@ class PHPConfigParserTest extends TestCase
         $this->assertSame($phpConfig['sourceDir'], $config->getSourceDir());
     }
 
-    public function testParseThrowsInvalidArgumentException(): void
+    public function testParseThrowsExceptionWithInvalidConfigFormat(): void
     {
         $invalidJsonConfigPath = $this->examplesConfigBasePath
             . DIRECTORY_SEPARATOR . 'invalid-php'
             . DIRECTORY_SEPARATOR . 'invalid-format.php';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(CannotParseConfigException::class);
         $this->expectExceptionMessage('Slim Console configuration should be an array.');
 
         PHPConfigParser::parse($invalidJsonConfigPath);
