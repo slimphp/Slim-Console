@@ -35,14 +35,14 @@ class ConfigResolver
     /**
      * Resolve configuration. Environment takes precedence over configuration file.
      *
-     * @param string $dir
+     * @param string|null $dir
      *
      * @return Config
      *
      * @throws CannotParseConfigException
      * @throws RuntimeException
      */
-    public function resolve(string $dir): Config
+    public function resolve(string $dir = null): Config
     {
         try {
             return $this->attemptResolvingConfigFromEnvironment();
@@ -62,12 +62,18 @@ class ConfigResolver
      */
     protected function attemptResolvingConfigFromEnvironment(): Config
     {
+        $bootstrapDir = getenv(Config::SLIM_CONSOLE_BOOTSTRAP_DIR);
+        $commandsDir = getenv(Config::SLIM_CONSOLE_COMMANDS_DIR);
+        $indexDir = getenv(Config::SLIM_CONSOLE_INDEX_DIR);
+        $indexFile = getenv(Config::SLIM_CONSOLE_INDEX_FILE);
+        $sourceDir = getenv(Config::SLIM_CONSOLE_SOURCE_DIR);
+
         if (
-            is_string(getenv(Config::SLIM_CONSOLE_BOOTSTRAP_DIR))
-            || is_string(getenv(Config::SLIM_CONSOLE_COMMANDS_DIR))
-            || is_string(getenv(Config::SLIM_CONSOLE_INDEX_DIR))
-            || is_string(getenv(Config::SLIM_CONSOLE_INDEX_FILE))
-            || is_string(getenv(Config::SLIM_CONSOLE_SOURCE_DIR))
+            (is_string($bootstrapDir) && !empty($bootstrapDir) && !ctype_space($bootstrapDir))
+            || (is_string($commandsDir) && !empty($commandsDir) && !ctype_space($commandsDir))
+            || (is_string($indexDir) && !empty($indexDir) && !ctype_space($indexDir))
+            || (is_string($indexFile) && !empty($indexFile) && !ctype_space($indexFile))
+            || (is_string($sourceDir) && !empty($sourceDir) && !ctype_space($sourceDir))
         ) {
             return Config::fromEnvironment();
         }
