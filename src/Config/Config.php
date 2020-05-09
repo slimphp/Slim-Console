@@ -21,14 +21,20 @@ class Config
     public const SLIM_CONSOLE_COMMANDS_DIR = 'SLIM_CONSOLE_COMMANDS_DIR';
 
     /**
-     * @var array
+     * @var array<string, string>
      */
     protected static $defaults = [
         'bootstrapDir' => 'app',
         'indexDir' => 'public',
         'indexFile' => 'index.php',
         'sourceDir' => 'src',
-        'commandsDir' => 'src/Application/Console/Commands',
+        'commandsDir' => 'src'
+            . DIRECTORY_SEPARATOR
+            . 'Application'
+            . DIRECTORY_SEPARATOR
+            . 'Console'
+            . DIRECTORY_SEPARATOR
+            . 'Commands',
     ];
 
     /**
@@ -118,7 +124,7 @@ class Config
     }
 
     /**
-     * @param array $params
+     * @param array<string, string> $params
      *
      * @throws InvalidArgumentException
      */
@@ -154,7 +160,7 @@ class Config
     }
 
     /**
-     * @param array<mixed> $params
+     * @param array<string, string> $params
      *
      * @return Config
      *
@@ -183,11 +189,11 @@ class Config
     public static function fromEnvironment(): Config
     {
         return self::fromArray([
-            'bootstrapDir' => getenv(self::SLIM_CONSOLE_BOOTSTRAP_DIR),
-            'indexDir' => getenv(self::SLIM_CONSOLE_INDEX_DIR),
-            'indexFile' => getenv(self::SLIM_CONSOLE_INDEX_FILE),
-            'sourceDir' => getenv(self::SLIM_CONSOLE_SOURCE_DIR),
-            'commandsDir' => getenv(self::SLIM_CONSOLE_COMMANDS_DIR),
+            'bootstrapDir' => (string) getenv(self::SLIM_CONSOLE_BOOTSTRAP_DIR),
+            'indexDir' => (string) getenv(self::SLIM_CONSOLE_INDEX_DIR),
+            'indexFile' => (string) getenv(self::SLIM_CONSOLE_INDEX_FILE),
+            'sourceDir' => (string) getenv(self::SLIM_CONSOLE_SOURCE_DIR),
+            'commandsDir' => (string) getenv(self::SLIM_CONSOLE_COMMANDS_DIR),
         ]);
     }
 
