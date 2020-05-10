@@ -17,7 +17,7 @@ use function putenv;
 
 use const DIRECTORY_SEPARATOR;
 
-abstract class TestCase extends PhpUnitTestCase
+abstract class TestCase extends PHPUnitTestCase
 {
     public function setUp(): void
     {
