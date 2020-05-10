@@ -16,6 +16,8 @@ use ReflectionProperty;
 use Slim\Console\Config\Config;
 use Slim\Tests\Console\TestCase;
 
+use function array_merge;
+
 class ConfigTest extends TestCase
 {
     public function testFromArray(): void

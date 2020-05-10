@@ -18,6 +18,9 @@ use Slim\Console\Config\Config;
 use Slim\Console\Config\ConfigResolver;
 use Slim\Tests\Console\TestCase;
 
+use function file_get_contents;
+use function json_decode;
+
 class ConfigResolverTest extends TestCase
 {
     public function supportedFormatsProvider(): array
