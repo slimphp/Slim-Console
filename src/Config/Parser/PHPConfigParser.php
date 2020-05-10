@@ -13,6 +13,8 @@ namespace Slim\Console\Config\Parser;
 use Slim\Console\Config\Config;
 use Slim\Console\Exception\CannotParseConfigException;
 
+use function is_array;
+
 class PHPConfigParser implements ConfigParserInterface
 {
     /**

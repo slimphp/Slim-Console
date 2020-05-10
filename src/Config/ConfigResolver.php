@@ -16,6 +16,13 @@ use Slim\Console\Config\Parser\PHPConfigParser;
 use Slim\Console\Exception\CannotParseConfigException;
 use Slim\Console\Exception\CannotResolveConfigException;
 
+use function ctype_space;
+use function getcwd;
+use function getenv;
+use function is_file;
+use function is_readable;
+use function is_string;
+
 class ConfigResolver
 {
     public const CONFIG_FILENAME = 'slim-console.config';
