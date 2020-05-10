@@ -1,5 +1,8 @@
 # Slim Console
 
+[![Build Status](https://travis-ci.org/slimphp/Slim-Console.svg?branch=0.x)](https://travis-ci.org/slimphp/Slim-Console)
+[![Coverage Status](https://coveralls.io/repos/github/slimphp/Slim-Console/badge.svg?branch=0.x)](https://coveralls.io/github/slimphp/Slim-Console?branch=0.x)
+
 ## Installation
 
 It's recommended that you use [Composer](https://getcomposer.org/) to install Slim Console.
