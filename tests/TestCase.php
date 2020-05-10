@@ -13,7 +13,7 @@ namespace Slim\Tests\Console;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Slim\Console\Config\Config;
 
-abstract class TestCase extends PhpUnitTestCase
+abstract class TestCase extends PHPUnitTestCase
 {
     public function setUp(): void
     {
