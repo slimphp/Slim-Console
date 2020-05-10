@@ -23,6 +23,8 @@ use function is_file;
 use function is_readable;
 use function is_string;
 
+use const DIRECTORY_SEPARATOR;
+
 class ConfigResolver
 {
     public const CONFIG_FILENAME = 'slim-console.config';

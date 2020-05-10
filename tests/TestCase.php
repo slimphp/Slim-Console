@@ -13,6 +13,10 @@ namespace Slim\Tests\Console;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Slim\Console\Config\Config;
 
+use function putenv;
+
+use const DIRECTORY_SEPARATOR;
+
 abstract class TestCase extends PHPUnitTestCase
 {
     public function setUp(): void
