@@ -17,6 +17,8 @@ use function ctype_space;
 use function getenv;
 use function is_string;
 
+use const DIRECTORY_SEPARATOR;
+
 class Config
 {
     public const SLIM_CONSOLE_BOOTSTRAP_DIR = 'SLIM_CONSOLE_BOOTSTRAP_DIR';

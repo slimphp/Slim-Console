@@ -18,6 +18,8 @@ use Slim\Tests\Console\TestCase;
 use function file_get_contents;
 use function json_decode;
 
+use const DIRECTORY_SEPARATOR;
+
 class JSONConfigParserTest extends TestCase
 {
     public function invalidConfigurationProvider(): array

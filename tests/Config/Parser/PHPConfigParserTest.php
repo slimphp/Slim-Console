@@ -15,6 +15,8 @@ use Slim\Console\Config\Parser\PHPConfigParser;
 use Slim\Console\Exception\CannotParseConfigException;
 use Slim\Tests\Console\TestCase;
 
+use const DIRECTORY_SEPARATOR;
+
 class PHPConfigParserTest extends TestCase
 {
     public function testParse(): void

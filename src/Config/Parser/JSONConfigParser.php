@@ -19,6 +19,8 @@ use function json_decode;
 use function json_last_error;
 use function json_last_error_msg;
 
+use const JSON_ERROR_NONE;
+
 class JSONConfigParser implements ConfigParserInterface
 {
     /**
