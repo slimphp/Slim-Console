@@ -15,6 +15,9 @@ use Slim\Console\Config\ConfigResolver;
 use Slim\Console\Config\Parser\JSONConfigParser;
 use Slim\Tests\Console\TestCase;
 
+use function file_get_contents;
+use function json_decode;
+
 class JSONConfigParserTest extends TestCase
 {
     public function invalidConfigurationProvider(): array
