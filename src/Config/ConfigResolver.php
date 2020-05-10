@@ -42,7 +42,7 @@ class ConfigResolver
      * @throws CannotParseConfigException
      * @throws RuntimeException
      */
-    public function resolve(string $dir = null): Config
+    public function resolve(?string $dir = null): Config
     {
         try {
             return $this->attemptResolvingConfigFromEnvironment();
@@ -90,7 +90,7 @@ class ConfigResolver
      * @throws CannotParseConfigException
      * @throws RuntimeException
      */
-    protected function attemptResolvingConfigFromSupportedFormats(string $dir = null): Config
+    protected function attemptResolvingConfigFromSupportedFormats(?string $dir = null): Config
     {
         $dir = $dir ?? getcwd();
         $basePath = $dir . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
