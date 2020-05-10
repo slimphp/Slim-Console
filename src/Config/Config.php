@@ -12,6 +12,11 @@ namespace Slim\Console\Config;
 
 use InvalidArgumentException;
 
+use function array_merge;
+use function ctype_space;
+use function getenv;
+use function is_string;
+
 class Config
 {
     public const SLIM_CONSOLE_BOOTSTRAP_DIR = 'SLIM_CONSOLE_BOOTSTRAP_DIR';

@@ -13,6 +13,12 @@ namespace Slim\Console\Config\Parser;
 use InvalidArgumentException;
 use Slim\Console\Config\Config;
 
+use function file_get_contents;
+use function is_array;
+use function json_decode;
+use function json_last_error;
+use function json_last_error_msg;
+
 class JSONConfigParser implements ConfigParserInterface
 {
     /**
