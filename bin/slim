@@ -10,7 +10,7 @@
 declare(strict_types=1);
 
 use Slim\Console\App;
-use Slim\Console\Command\InitCommand;
+use Slim\Console\Command\Initializer\InitCommand;
 use Slim\Console\Config\ConfigResolver;
 
 $cwd = getcwd();
