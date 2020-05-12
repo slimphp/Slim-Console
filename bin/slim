@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Slim\Console\App;
+use Slim\Console\Command\InitCommand;
 use Slim\Console\Config\ConfigResolver;
 
 $cwd = getcwd();
@@ -23,4 +24,11 @@ if (file_exists(__DIR__ . '/../../../autoload.php')) {
 $config = (new ConfigResolver())->resolve($cwd);
 
 $app = new App($config);
+
+$app->addCommands(
+    [
+        new InitCommand(),
+    ]
+);
+
 $app->run();
