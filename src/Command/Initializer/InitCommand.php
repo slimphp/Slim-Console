@@ -20,6 +20,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use function in_array;
 use function glob;
 use function basename;
+use function is_array;
+use function is_string;
 
 /**
  * Class InitCommand.
@@ -63,14 +65,15 @@ class InitCommand extends AbstractCommand
     {
         $profileObject = null;
         $profile = $input->getOption('profile');
-        $useDefaultSetup = $input->getOption('default');
+        $profile = is_string($profile) ? $profile : 'blank';
+        $useDefaultSetup = (bool)$input->getOption('default');
 
         if (!in_array($profile, $this->getAvailableProfiles())) {
             throw new InvalidOptionException("Profile `{$profile}` not found!");
         }
 
         $profile = self::PROFILE_NAMESPACE_PREFIX . "\\{$profile}\\" . self::PROFILE_INIT_CLASS;
-        /** @var InitProfileInterface $profileInitObject */
+        /** @var InitProfileInterface $profileObject */
         $profileObject = new $profile();
 
         return $profileObject->run($input, $output, $useDefaultSetup);
@@ -79,15 +82,17 @@ class InitCommand extends AbstractCommand
     /**
      * Get available initialization profiles.
      *
-     * @return array
+     * @return array<string>
      */
     private function getAvailableProfiles(): array
     {
         $profiles = [];
         $glob = glob(__DIR__ . DIRECTORY_SEPARATOR . 'Profiles' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
-        foreach ($glob as $profile) {
-            $profiles[] = basename($profile);
+        if (is_array($glob)) {
+            foreach ($glob as $profile) {
+                $profiles[] = basename($profile);
+            }
         }
 
         return $profiles;
