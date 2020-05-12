@@ -4,4 +4,4 @@ Profile doc goes here...
 
 ## Authors
 
-- [**Temuri Takalandze**](https://abgeo.dev)
+- [**Temuri Takalandze**](https://github.com/ABGEO)
