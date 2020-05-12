@@ -17,9 +17,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use function in_array;
-use function glob;
 use function basename;
+use function glob;
+use function in_array;
 use function is_array;
 use function is_string;
 
