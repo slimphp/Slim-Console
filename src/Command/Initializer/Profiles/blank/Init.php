@@ -60,6 +60,10 @@ class Init extends AbstractInitProfile
             return $exitCode;
         }
 
+        if (0 !== ($exitCode = $this->setupDependencies($projectDirectory))) {
+            return $exitCode;
+        }
+
         $this->io->warning('Work In Progress!');
 
         return 0;
@@ -90,7 +94,8 @@ class Init extends AbstractInitProfile
             $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'routes.php',
             $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'settings.php',
 
-            $directoriesToCreate['index'] . DIRECTORY_SEPARATOR . 'index.php',
+            $directoriesToCreate['index'] . DIRECTORY_SEPARATOR .
+                ($this->config ? $this->config->getIndexFile() : 'index.php'),
         ];
 
         foreach ($directoriesToCreate as $directory) {
@@ -107,7 +112,7 @@ class Init extends AbstractInitProfile
 
         copy(
             $this->templatesDirectory . DIRECTORY_SEPARATOR . '.gitignore.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . '.gitignore'
+            $directoryFullPath . DIRECTORY_SEPARATOR . '.gitignore'
         );
 
         // Setup PHPUnit.
@@ -116,6 +121,7 @@ class Init extends AbstractInitProfile
             $this->templatesDirectory . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'bootstrap.php.template',
             $directoryFullPath . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'bootstrap.php'
         );
+
         $phpunitTemplate = file_get_contents($this->templatesDirectory . DIRECTORY_SEPARATOR . 'phpunit.xml.template');
         $phpunitTemplate = str_replace(
             ['{testsDirectory}', '{sourceDirectory}'],
@@ -132,6 +138,61 @@ class Init extends AbstractInitProfile
         $composerJsonContent['scripts']['test'] = 'phpunit';
 
         // End of Setup PHPUnit.
+
+        return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
+    }
+
+    /**
+     * Setup project dependencies.
+     *
+     * @param string $projectDirectory
+     *
+     * @return int The Exit Code.
+     */
+    protected function setupDependencies(string $projectDirectory): int
+    {
+        $settingsTemplate = null;
+        $directoryFullPath = getcwd() . DIRECTORY_SEPARATOR . $projectDirectory;
+        $composerJsonContent = $this->readComposerJson($directoryFullPath);
+        $bootstrapDirectory = $this->config ? $this->config->getBootstrapDir() : 'app';
+        $indexDirectory = $this->config ? $this->config->getIndexDir() : 'public';
+
+        // TODO: Implement interactive way.
+        $composerJsonContent['require']['monolog/monolog'] = '^2.0';
+        $composerJsonContent['require']['php-di/php-di'] = '^6.1';
+        $composerJsonContent['require']['slim/psr7'] = '^1.1';
+
+        copy(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
+            . 'dependencies.php.template',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
+        );
+        copy(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
+            . 'middleware.php.template',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php',
+        );
+        copy(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
+            . 'routes.php.template',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
+        );
+
+        $settingsTemplate = file_get_contents(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
+            . 'settings.php.template'
+        );
+        $settingsTemplate = str_replace('{appName}', $projectDirectory, $settingsTemplate ? $settingsTemplate : '');
+        file_put_contents(
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
+            $settingsTemplate
+        );
+
+        copy(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR
+            . 'index.php.template',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php',
+        );
 
         return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
     }
