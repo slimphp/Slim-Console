@@ -74,7 +74,7 @@ abstract class AbstractInitProfile implements InitProfileInterface
     {
         $projectData = null;
         $directoryFullPath = getcwd() . DIRECTORY_SEPARATOR . $projectDirectory;
-        $directoryContent = scandir($directoryFullPath);
+        $directoryContent = is_dir($directoryFullPath) ? scandir($directoryFullPath) : [];
 
         if (is_dir($directoryFullPath) && is_array($directoryContent) && count($directoryContent) > 2) {
             $this->io->error("Project directory `{$projectDirectory}` is not empty!");
