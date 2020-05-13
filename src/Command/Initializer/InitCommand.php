@@ -13,6 +13,7 @@ namespace Slim\Console\Command\Initializer;
 use Slim\Console\Command\AbstractCommand;
 use Slim\Console\Command\Initializer\Profiles\InitProfileInterface;
 use Symfony\Component\Console\Exception\InvalidOptionException;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -43,6 +44,11 @@ class InitCommand extends AbstractCommand
     {
         $this
             ->setDescription('Initialize a new Slim project')
+            ->addArgument(
+                'directory',
+                InputArgument::REQUIRED,
+                'Directory of the project to create'
+            )
             ->addOption(
                 'profile',
                 'p',
@@ -64,6 +70,8 @@ class InitCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $profileObject = null;
+        $directory = $input->getArgument('directory');
+        $directory = is_string($directory) ? $directory : 'new-slim-project';
         $profile = $input->getOption('profile');
         $profile = is_string($profile) ? $profile : 'blank';
         $useDefaultSetup = (bool)$input->getOption('default');
@@ -74,9 +82,9 @@ class InitCommand extends AbstractCommand
 
         $profile = self::PROFILE_NAMESPACE_PREFIX . "\\{$profile}\\" . self::PROFILE_INIT_CLASS;
         /** @var InitProfileInterface $profileObject */
-        $profileObject = new $profile();
+        $profileObject = new $profile($input, $output, $this->getConfig());
 
-        return $profileObject->run($input, $output, $useDefaultSetup);
+        return $profileObject->run($directory, $useDefaultSetup);
     }
 
     /**

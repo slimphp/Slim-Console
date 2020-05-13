@@ -10,9 +10,7 @@ declare(strict_types=1);
 
 namespace Slim\Console\Command\Initializer\Profiles\blank;
 
-use Slim\Console\Command\Initializer\Profiles\InitProfileInterface;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Slim\Console\Command\Initializer\Profiles\AbstractInitProfile;
 
 /**
  * Init class implementation for profile Blank.
@@ -20,14 +18,20 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @package Slim\Console\Command\Initializer\Profiles\blank
  * @author Temuri Takalandze <me@abgeo.dev>
  */
-class Init implements InitProfileInterface
+class Init extends AbstractInitProfile
 {
     /**
      * {@inheritDoc}
      */
-    public function run(InputInterface $input, OutputInterface $output, bool $useDefaultSetup = false): int
+    public function run(string $projectDirectory, bool $useDefaultSetup = false): int
     {
-        $output->writeln('Work In Progress!');
+        $parentExitCode = null;
+
+        if (0 !== ($parentExitCode = parent::run($projectDirectory, $useDefaultSetup))) {
+            return $parentExitCode;
+        }
+
+        $this->io->warning('Work In Progress!');
 
         return 0;
     }
