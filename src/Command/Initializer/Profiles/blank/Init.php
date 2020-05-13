@@ -20,8 +20,10 @@ use function file_get_contents;
 use function file_put_contents;
 use function getcwd;
 use function is_dir;
+use function is_file;
 use function mkdir;
 use function str_replace;
+use function touch;
 
 /**
  * Init class implementation for profile Blank.
@@ -76,16 +78,30 @@ class Init extends AbstractInitProfile
         $directoryFullPath = getcwd() . DIRECTORY_SEPARATOR . $projectDirectory;
         $composerJsonContent = $this->readComposerJson($directoryFullPath);
         $directoriesToCreate = [
-            $this->config ? $this->config->getBootstrapDir() : 'app',
-            $this->config ? $this->config->getIndexDir() : 'public',
-            $this->config ? $this->config->getSourceDir() : 'src',
-            'logs',
-            'tests',
+            'bootstrap' => $this->config ? $this->config->getBootstrapDir() : 'app',
+            'index'     => $this->config ? $this->config->getIndexDir() : 'public',
+            'source'    => $this->config ? $this->config->getSourceDir() : 'src',
+            'logs'      => 'logs',
+            'tests'     => 'tests',
+        ];
+        $filesToCreate = [
+            $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'dependencies.php',
+            $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'middleware.php',
+            $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'routes.php',
+            $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'settings.php',
+
+            $directoriesToCreate['index'] . DIRECTORY_SEPARATOR . 'index.php',
         ];
 
         foreach ($directoriesToCreate as $directory) {
             if (!is_dir($directoryFullPath . DIRECTORY_SEPARATOR . $directory)) {
                 mkdir($directoryFullPath . DIRECTORY_SEPARATOR . $directory, 0755, true);
+            }
+        }
+
+        foreach ($filesToCreate as $file) {
+            if (!is_file($directoryFullPath . DIRECTORY_SEPARATOR . $file)) {
+                touch($directoryFullPath . DIRECTORY_SEPARATOR . $file);
             }
         }
 
