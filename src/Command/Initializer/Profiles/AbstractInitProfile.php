@@ -110,7 +110,11 @@ abstract class AbstractInitProfile implements InitProfileInterface
                 'name' => '',
                 'description' => '',
                 'license' => '',
-                'require' => new stdClass(),
+                'require' => [
+                    'php' => '^7.2',
+                    'ext-json' => '*',
+                    'slim/slim' => '^4.5',
+                ],
                 'require-dev' => new stdClass(),
                 'autoload' => [
                     'psr-4' => [
