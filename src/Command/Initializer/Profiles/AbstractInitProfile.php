@@ -17,10 +17,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 use function array_merge;
+use function file_get_contents;
 use function file_put_contents;
 use function getcwd;
 use function is_array;
 use function is_dir;
+use function is_file;
+use function json_decode;
 use function json_encode;
 use function mkdir;
 use function scandir;
@@ -80,7 +83,7 @@ abstract class AbstractInitProfile implements InitProfileInterface
         }
 
         if (!is_dir($directoryFullPath)) {
-            mkdir($directoryFullPath);
+            mkdir($directoryFullPath, 0755);
         }
 
         $projectData = [
@@ -89,18 +92,18 @@ abstract class AbstractInitProfile implements InitProfileInterface
             'license' => $this->io->ask('License', ''),
         ];
 
-        return $this->createComposerJson($directoryFullPath, $projectData);
+        return $this->writeToComposerJson($directoryFullPath, $projectData);
     }
 
     /**
-     * Create composer.json file.
+     * Write to composer.json file.
      *
      * @param string $directory
      * @param array<string, array> $data
      *
      * @return int The Exit Code.
      */
-    public function createComposerJson(string $directory, array $data): int
+    public function writeToComposerJson(string $directory, array $data): int
     {
         $data = array_merge(
             [
@@ -121,6 +124,14 @@ abstract class AbstractInitProfile implements InitProfileInterface
             $data
         );
 
+        if (is_array($data['require']) && empty($data['require'])) {
+            $data['require'] = new stdClass();
+        }
+
+        if (is_array($data['require-dev']) && empty($data['require-dev'])) {
+            $data['require-dev'] = new stdClass();
+        }
+
         if (
             !file_put_contents(
                 $directory . DIRECTORY_SEPARATOR . 'composer.json',
@@ -131,5 +142,28 @@ abstract class AbstractInitProfile implements InitProfileInterface
         }
 
         return 0;
+    }
+
+    /**
+     * Read composer.json file.
+     *
+     * @param string $directory
+     *
+     * @return array<string, array>
+     */
+    protected function readComposerJson(string $directory): array
+    {
+        $filePath = $directory . DIRECTORY_SEPARATOR . 'composer.json';
+        $content = null;
+
+        if (!is_file($filePath)) {
+            return [];
+        }
+
+        if (!$content = file_get_contents($filePath)) {
+            return [];
+        }
+
+        return json_decode($content, true);
     }
 }
