@@ -135,7 +135,7 @@ class Init extends AbstractInitProfile
         );
         file_put_contents($directoryFullPath . DIRECTORY_SEPARATOR . 'phpunit.xml', $phpunitTemplate);
 
-        $composerJsonContent['require-dev']['phpunit/phpunit'] = '^8.5';
+        $composerJsonContent['require-dev']['phpunit/phpunit'] = Versions::PHP_UNIT;
         $composerJsonContent['scripts']['test'] = 'phpunit';
 
         // End of Setup PHPUnit.
@@ -214,34 +214,34 @@ class Init extends AbstractInitProfile
                 'Slim PSR-7' => [
                     'id'      => 'slim_psr_7',
                     'package' => 'slim/psr7',
-                    'version' => '^1.1',
+                    'version' => Versions::SLIM_PSR_7,
                 ],
                 'Laminas' => [
                     'id'      => 'laminas',
                     'package' => 'laminas/laminas-diactoros',
-                    'version' => '^2.3',
+                    'version' => Versions::LAMINAS,
                 ],
                 'Guzzle' => [
                     'id'      => 'guzzle',
                     'package' => 'guzzlehttp/psr7',
-                    'version' => '^1.6',
+                    'version' => Versions::GIZZLE_PSR_7,
                 ],
                 'Nyholm' => [
                     'id'      => 'nyholm',
                     'package' => 'nyholm/psr7',
-                    'version' => '^1.2',
+                    'version' => Versions::NHYOLM_PSR_7,
                 ],
             ],
             'dependencyContainer' => [
                 'PHP DI' => [
                     'id'      => 'php_di',
                     'package' => 'php-di/php-di',
-                    'version' => '^6.1',
+                    'version' => Versions::PHP_DI,
                 ],
                 'Pimple' => [
                     'id'      => 'pimple',
                     'package' => 'pimple/pimple',
-                    'version' => '^3.0',
+                    'version' => Versions::PIMPIE,
                 ],
                 'Other' => [
                     'id'      => 'other',
@@ -253,7 +253,7 @@ class Init extends AbstractInitProfile
                 'Monolog' => [
                     'id'      => 'monolog',
                     'package' => 'monolog/monolog',
-                    'version' => '^2.0',
+                    'version' => Versions::MONOLOG,
                 ],
             ],
         ];
