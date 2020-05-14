@@ -139,7 +139,7 @@ abstract class AbstractInitProfile implements InitProfileInterface
         if (
             !file_put_contents(
                 $directory . DIRECTORY_SEPARATOR . 'composer.json',
-                json_encode($data, JSON_PRETTY_PRINT)
+                json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
             )
         ) {
             return -1;
