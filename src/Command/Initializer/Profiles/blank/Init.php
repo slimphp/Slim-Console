@@ -137,6 +137,11 @@ class Init extends AbstractInitProfile
 
         $composerJsonContent['require-dev']['phpunit/phpunit'] = Versions::PHP_UNIT;
         $composerJsonContent['scripts']['test'] = 'phpunit';
+        $composerJsonContent['autoload-dev'] = [
+            'psr-4' => [
+                'Tests\\' => 'tests',
+            ],
+        ];
 
         // End of Setup PHPUnit.
 
