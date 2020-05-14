@@ -25,6 +25,7 @@ use function is_dir;
 use function is_file;
 use function json_decode;
 use function json_encode;
+use function ksort;
 use function mkdir;
 use function scandir;
 
@@ -111,29 +112,43 @@ abstract class AbstractInitProfile implements InitProfileInterface
                 'description' => '',
                 'license' => '',
                 'require' => [
-                    'php'       => Versions::PHP,
                     'ext-json'  => Versions::EXT_JSON,
+                    'php'       => Versions::PHP,
                     'slim/slim' => Versions::SLIM,
                 ],
-                'require-dev' => new stdClass(),
+                'require-dev' => [],
                 'autoload' => [
                     'psr-4' => [
                         'App\\' => $this->config ? $this->config->getSourceDir() : 'src',
                     ],
                 ],
+                'autoload-dev' => [],
                 'scripts' => [
                     'start' => 'php -S localhost:8080 -t ' . ($this->config ? $this->config->getIndexDir() : 'public'),
                 ],
             ],
             $data
         );
+        $require = (array)$data['require'];
+        $requireDev = (array)$data['require-dev'];
 
-        if (is_array($data['require']) && empty($data['require'])) {
+        ksort($require);
+        ksort($requireDev);
+        $data['require'] = $require;
+        $data['require-dev'] = $requireDev;
+
+        if (array() === $data['require']) {
             $data['require'] = new stdClass();
         }
 
-        if (is_array($data['require-dev']) && empty($data['require-dev'])) {
+        if (array() === $data['require-dev']) {
             $data['require-dev'] = new stdClass();
+        }
+
+        foreach ($data as $k => $v) {
+            if (array() === $v) {
+                unset($data[$k]);
+            }
         }
 
         if (
