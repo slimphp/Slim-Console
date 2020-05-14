@@ -31,4 +31,7 @@ $app->addCommands(
     ]
 );
 
+unset($cwd);
+unset($config);
+
 $app->run();

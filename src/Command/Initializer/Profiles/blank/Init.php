@@ -15,6 +15,7 @@ use Slim\Console\Config\Config;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function array_keys;
 use function copy;
 use function file_get_contents;
 use function file_put_contents;
@@ -156,26 +157,27 @@ class Init extends AbstractInitProfile
         $composerJsonContent = $this->readComposerJson($directoryFullPath);
         $bootstrapDirectory = $this->config ? $this->config->getBootstrapDir() : 'app';
         $indexDirectory = $this->config ? $this->config->getIndexDir() : 'public';
+        $dependencies = $this->askDependencies();
 
-        // TODO: Implement interactive way.
-        $composerJsonContent['require']['monolog/monolog'] = '^2.0';
-        $composerJsonContent['require']['php-di/php-di'] = '^6.1';
-        $composerJsonContent['require']['slim/psr7'] = '^1.1';
+        foreach ($dependencies as $dependency) {
+            $composerJsonContent['require'][$dependency['package']] = $dependency['version'];
+        }
 
+        // TODO: Setup from $dependencies.
         copy(
             $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
             . 'dependencies.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php'
         );
         copy(
             $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
             . 'middleware.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php'
         );
         copy(
             $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
             . 'routes.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php'
         );
 
         $settingsTemplate = file_get_contents(
@@ -191,9 +193,111 @@ class Init extends AbstractInitProfile
         copy(
             $this->templatesDirectory . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR
             . 'index.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php'
         );
 
         return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
+    }
+
+    /**
+     * Collect dependencies from user input.
+     *
+     * @return array<array>
+     */
+    protected function askDependencies(): array
+    {
+        $requestResponse = null;
+        $dependencyContainer = null;
+        $logger = null;
+        $availableDependencies = [
+            'requestResponse' => [
+                'Slim PSR-7' => [
+                    'id'      => 'slim_psr_7',
+                    'package' => 'slim/psr7',
+                    'version' => '^1.1',
+                ],
+                'Laminas' => [
+                    'id'      => 'laminas',
+                    'package' => 'laminas/laminas-diactoros',
+                    'version' => '^2.3',
+                ],
+                'Guzzle' => [
+                    'id'      => 'guzzle',
+                    'package' => 'guzzlehttp/psr7',
+                    'version' => '^1.6',
+                ],
+                'Nyholm' => [
+                    'id'      => 'nyholm',
+                    'package' => 'nyholm/psr7',
+                    'version' => '^1.2',
+                ],
+            ],
+            'dependencyContainer' => [
+                'PHP DI' => [
+                    'id'      => 'php_di',
+                    'package' => 'php-di/php-di',
+                    'version' => '^6.1',
+                ],
+                'Pimple' => [
+                    'id'      => 'pimple',
+                    'package' => 'pimple/pimple',
+                    'version' => '^3.0',
+                ],
+                'Other' => [
+                    'id'      => 'other',
+                    'package' => null,
+                    'version' => null,
+                ],
+            ],
+            'logger' => [
+                'Monolog' => [
+                    'id'      => 'monolog',
+                    'package' => 'monolog/monolog',
+                    'version' => '^2.0',
+                ],
+            ],
+        ];
+        $dependencies = [];
+
+        if ($this->io->confirm('Do you want to configure the PSR-7 HTTP message interface?')) {
+            $requestResponse = $this->io->choice(
+                'Select PSR-7 implementation',
+                array_keys($availableDependencies['requestResponse']),
+                'Slim PSR-7'
+            );
+
+            $dependencies['requestResponse'] = $availableDependencies['requestResponse'][$requestResponse];
+        }
+
+        if ($this->io->confirm('Do you want to configure Dependency Container?')) {
+            $dependencyContainer = $this->io->choice(
+                'Select Dependency Container',
+                array_keys($availableDependencies['dependencyContainer']),
+                'PHP DI'
+            );
+
+            $dependencies['dependencyContainer'] = $availableDependencies['dependencyContainer'][$dependencyContainer];
+            if ('Other' === $dependencyContainer) {
+                $dependencies['dependencyContainer']['package'] = $this->io->ask(
+                    'Enter Dependency Container package (<vendor>/<package>)'
+                );
+                $dependencies['dependencyContainer']['version'] = $this->io->ask(
+                    'Enter Dependency Container version',
+                    '*'
+                );
+            }
+        }
+
+        if ($this->io->confirm('Do you want to configure PSR-3 Logging?')) {
+            $logger = $this->io->choice(
+                'Select PSR-3 Logger',
+                array_keys($availableDependencies['logger']),
+                'Monolog'
+            );
+
+            $dependencies['logger'] = $availableDependencies['logger'][$logger];
+        }
+
+        return $dependencies;
     }
 }
