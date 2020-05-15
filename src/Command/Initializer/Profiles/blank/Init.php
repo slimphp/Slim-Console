@@ -157,14 +157,48 @@ class Init extends AbstractInitProfile
      */
     protected function setupDependencies(string $projectDirectory): int
     {
-        $routesTemplate = null;
-        $routesTemplateImports = null;
-        $settingsTemplate = null;
         $directoryFullPath = getcwd() . DIRECTORY_SEPARATOR . $projectDirectory;
         $composerJsonContent = $this->readComposerJson($directoryFullPath);
         $bootstrapDirectory = $this->config ? $this->config->getBootstrapDir() : 'app';
         $indexDirectory = $this->config ? $this->config->getIndexDir() : 'public';
         $dependencies = $this->askDependencies();
+        $templates = [
+            'sourcePrefix' => $this->templatesDirectory . DIRECTORY_SEPARATOR,
+            'destinationPrefix' => $directoryFullPath . DIRECTORY_SEPARATOR,
+            'templates' => [
+                'routes' => [
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'routes.php.template',
+                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
+                    'template' => '',
+                    'replaces' => [],
+                ],
+                'settings' => [
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'settings.php.template',
+                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
+                    'template' => '',
+                    'replaces' => [],
+                ],
+
+                'dependencies' => [
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'dependencies.php.template',
+                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
+                    'template' => '',
+                    'replaces' => [],
+                ],
+                'middleware' => [
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'middleware.php.template',
+                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php',
+                    'template' => '',
+                    'replaces' => [],
+                ],
+                'index' => [
+                    'sourceFile' => 'public' . DIRECTORY_SEPARATOR . 'index.php.template',
+                    'destinationFile' => $indexDirectory . DIRECTORY_SEPARATOR . 'index.php',
+                    'template' => '',
+                    'replaces' => [],
+                ],
+            ],
+        ];
 
         foreach ($dependencies as $dependency) {
             foreach ($dependency['packages'] as $package => $version) {
@@ -172,62 +206,46 @@ class Init extends AbstractInitProfile
             }
         }
 
-        // Setup routes.php.
+        // Read templates.
+        foreach ($templates['templates'] as $k => $template) {
+            $templates['templates'][$k]['template'] = file_get_contents(
+                $templates['sourcePrefix'] . DIRECTORY_SEPARATOR . $template['sourceFile']
+            );
+        }
 
         switch ($dependencies['requestResponse']['id']) {
             case 'slim_psr_7':
-                $routesTemplateImports = "use Psr\Http\Message\ResponseInterface as Response;\n" .
+                $templates['templates']['routes']['replaces']['{imports}'] =
+                    "use Psr\Http\Message\ResponseInterface as Response;\n" .
                     "use Psr\Http\Message\ServerRequestInterface as Request;";
                 break;
             case 'laminas':
-                $routesTemplateImports = "use Laminas\Diactoros\ServerRequest as Request;\n" .
+                $templates['routes']['replaces']['{imports}'] = "use Laminas\Diactoros\ServerRequest as Request;\n" .
                     "use Laminas\Diactoros\Response;";
                 break;
             case 'guzzle':
-                $routesTemplateImports = "use GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;";
+                $templates['routes']['replaces']['{imports}'] = "use GuzzleHttp\Psr7\Request;\n" .
+                    "use GuzzleHttp\Psr7\Response;";
                 break;
             case 'nyholm':
-                $routesTemplateImports = "use Nyholm\Psr7\ServerRequest as Request;\nuse Nyholm\Psr7\Response;";
+                $templates['routes']['replaces']['{imports}'] = "use Nyholm\Psr7\ServerRequest as Request;\n" .
+                    "use Nyholm\Psr7\Response;";
                 break;
         }
 
-        $routesTemplate = file_get_contents(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'routes.php.template'
-        );
-        $routesTemplate = str_replace(
-            '{imports}',
-            $routesTemplateImports,
-            $routesTemplate ? $routesTemplate : ''
-        );
-        file_put_contents(
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
-            $routesTemplate
-        );
+        $templates['templates']['settings']['replaces']['{appName}'] = $projectDirectory;
 
-        // End of Setup routes.php.
+        // Replace tokens in templates and write to destination files.
+        foreach ($templates['templates'] as $k => $template) {
+            foreach ($template['replaces'] as $token => $replace) {
+                $template['template'] = str_replace($token, $replace, (string)$template['template']);
+            }
 
-        copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'dependencies.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php'
-        );
-        copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'middleware.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php'
-        );
-
-        $settingsTemplate = file_get_contents(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'settings.php.template'
-        );
-        $settingsTemplate = str_replace('{appName}', $projectDirectory, $settingsTemplate ? $settingsTemplate : '');
-        file_put_contents(
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
-            $settingsTemplate
-        );
-
-        copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'index.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php'
-        );
+            file_put_contents(
+                $templates['destinationPrefix'] . $template['destinationFile'],
+                $template['template']
+            );
+        }
 
         return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
     }
