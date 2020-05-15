@@ -157,6 +157,8 @@ class Init extends AbstractInitProfile
      */
     protected function setupDependencies(string $projectDirectory): int
     {
+        $routesTemplate = null;
+        $routesTemplateImports = null;
         $settingsTemplate = null;
         $directoryFullPath = getcwd() . DIRECTORY_SEPARATOR . $projectDirectory;
         $composerJsonContent = $this->readComposerJson($directoryFullPath);
@@ -165,29 +167,56 @@ class Init extends AbstractInitProfile
         $dependencies = $this->askDependencies();
 
         foreach ($dependencies as $dependency) {
-            $composerJsonContent['require'][$dependency['package']] = $dependency['version'];
+            foreach ($dependency['packages'] as $package => $version) {
+                $composerJsonContent['require'][$package] = $version;
+            }
         }
 
-        // TODO: Setup from $dependencies.
+        // Setup routes.php.
+
+        switch ($dependencies['requestResponse']['id']) {
+            case 'slim_psr_7':
+                $routesTemplateImports = "use Psr\Http\Message\ResponseInterface as Response;\n" .
+                    "use Psr\Http\Message\ServerRequestInterface as Request;";
+                break;
+            case 'laminas':
+                $routesTemplateImports = "use Laminas\Diactoros\ServerRequest as Request;\n" .
+                    "use Laminas\Diactoros\Response;";
+                break;
+            case 'guzzle':
+                $routesTemplateImports = "use GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;";
+                break;
+            case 'nyholm':
+                $routesTemplateImports = "use Nyholm\Psr7\ServerRequest as Request;\nuse Nyholm\Psr7\Response;";
+                break;
+        }
+
+        $routesTemplate = file_get_contents(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'routes.php.template'
+        );
+        $routesTemplate = str_replace(
+            '{imports}',
+            $routesTemplateImports,
+            $routesTemplate ? $routesTemplate : ''
+        );
+        file_put_contents(
+            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
+            $routesTemplate
+        );
+
+        // End of Setup routes.php.
+
         copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
-            . 'dependencies.php.template',
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'dependencies.php.template',
             $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php'
         );
         copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
-            . 'middleware.php.template',
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'middleware.php.template',
             $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php'
-        );
-        copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
-            . 'routes.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php'
         );
 
         $settingsTemplate = file_get_contents(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . $bootstrapDirectory . DIRECTORY_SEPARATOR
-            . 'settings.php.template'
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'settings.php.template'
         );
         $settingsTemplate = str_replace('{appName}', $projectDirectory, $settingsTemplate ? $settingsTemplate : '');
         file_put_contents(
@@ -196,8 +225,7 @@ class Init extends AbstractInitProfile
         );
 
         copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR
-            . 'index.php.template',
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'index.php.template',
             $directoryFullPath . DIRECTORY_SEPARATOR . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php'
         );
 
@@ -217,48 +245,56 @@ class Init extends AbstractInitProfile
         $availableDependencies = [
             'requestResponse' => [
                 'Slim PSR-7' => [
-                    'id'      => 'slim_psr_7',
-                    'package' => 'slim/psr7',
-                    'version' => Versions::SLIM_PSR_7,
+                    'id'       => 'slim_psr_7',
+                    'packages' => [
+                        'slim/psr7' => Versions::SLIM_PSR_7,
+                    ],
                 ],
                 'Laminas' => [
-                    'id'      => 'laminas',
-                    'package' => 'laminas/laminas-diactoros',
-                    'version' => Versions::LAMINAS,
+                    'id'       => 'laminas',
+                    'packages' => [
+                        'laminas/laminas-diactoros' => Versions::LAMINAS,
+                    ],
                 ],
                 'Guzzle' => [
-                    'id'      => 'guzzle',
-                    'package' => 'guzzlehttp/psr7',
-                    'version' => Versions::GIZZLE_PSR_7,
+                    'id'       => 'guzzle',
+                    'packages' => [
+                        'guzzlehttp/psr7' => Versions::GIZZLE_PSR_7,
+                        'http-interop/http-factory-guzzle' => Versions::HTTP_FACTORY_GUZZLE,
+                    ],
                 ],
                 'Nyholm' => [
-                    'id'      => 'nyholm',
-                    'package' => 'nyholm/psr7',
-                    'version' => Versions::NHYOLM_PSR_7,
+                    'id'       => 'nyholm',
+                    'packages' => [
+                        'nyholm/psr7'        => Versions::NHYOLM_PSR_7,
+                        'nyholm/psr7-server' => Versions::NHYOLM_PSR_7_SERVER,
+                    ],
                 ],
             ],
             'dependencyContainer' => [
                 'PHP DI' => [
-                    'id'      => 'php_di',
-                    'package' => 'php-di/php-di',
-                    'version' => Versions::PHP_DI,
+                    'id'       => 'php_di',
+                    'packages' => [
+                        'php-di/php-di' => Versions::PHP_DI,
+                    ],
                 ],
                 'Pimple' => [
-                    'id'      => 'pimple',
-                    'package' => 'pimple/pimple',
-                    'version' => Versions::PIMPIE,
+                    'id'       => 'pimple',
+                    'packages' => [
+                        'pimple/pimple' => Versions::PIMPIE,
+                    ],
                 ],
                 'Other' => [
-                    'id'      => 'other',
-                    'package' => null,
-                    'version' => null,
+                    'id'       => 'other',
+                    'packages' => [],
                 ],
             ],
             'logger' => [
                 'Monolog' => [
-                    'id'      => 'monolog',
-                    'package' => 'monolog/monolog',
-                    'version' => Versions::MONOLOG,
+                    'id'       => 'monolog',
+                    'packages' => [
+                        'monolog/monolog' => Versions::MONOLOG,
+                    ],
                 ],
             ],
         ];
@@ -283,13 +319,10 @@ class Init extends AbstractInitProfile
 
             $dependencies['dependencyContainer'] = $availableDependencies['dependencyContainer'][$dependencyContainer];
             if ('Other' === $dependencyContainer) {
-                $dependencies['dependencyContainer']['package'] = $this->io->ask(
-                    'Enter Dependency Container package (<vendor>/<package>)'
-                );
-                $dependencies['dependencyContainer']['version'] = $this->io->ask(
-                    'Enter Dependency Container version',
-                    '*'
-                );
+                $dependencies['dependencyContainer'] = [
+                    $this->io->ask('Enter Dependency Container package (<vendor>/<package>)')
+                        => $this->io->ask('Enter Dependency Container version', '*'),
+                ];
             }
         }
 
