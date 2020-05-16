@@ -2,24 +2,21 @@
 
 declare(strict_types=1);
 
-use Slim\Factory\AppFactory;
+{imports}
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// TODO: Instantiate you'r Dependency Container
-$container = null;
+{defineContainer}
 
 // Set up settings
 $settings = require __DIR__ . '/../app/settings.php';
-$settings($container);
+$settings({containerVariable});
 
 // Set up dependencies
 $dependencies = require __DIR__ . '/../app/dependencies.php';
-$dependencies($container);
+$dependencies({containerVariable});
 
-// Instantiate the app
-// TODO: Uncomment the line below if you created an instance of Dependency Container
-//AppFactory::setContainer($container);
+{setContainer}
 $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 

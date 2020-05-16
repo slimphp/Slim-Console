@@ -191,8 +191,7 @@ class Init extends AbstractInitProfile
                     'replaces' => [],
                 ],
                 'index' => [
-                    'sourceFile' => 'public' . DIRECTORY_SEPARATOR . 'index.'
-                        . $dependencies['dependencyContainer']['id'] . '.php.template',
+                    'sourceFile' => 'public' . DIRECTORY_SEPARATOR . 'index.php.template',
                     'destinationFile' => $indexDirectory . DIRECTORY_SEPARATOR . 'index.php',
                     'template' => '',
                     'replaces' => [],
@@ -294,6 +293,25 @@ BODY;
     ]);
 
 BODY;
+
+                $templates['templates']['index']['replaces']['{containerVariable}'] = '$containerBuilder';
+                $templates['templates']['index']['replaces']['{imports}'] = "use DI\ContainerBuilder;\n" .
+                    "use Slim\Factory\AppFactory;";
+                $templates['templates']['index']['replaces']['{defineContainer}'] = <<<'BODY'
+// Instantiate PHP-DI ContainerBuilder
+$containerBuilder = new ContainerBuilder();
+
+if (false) { // Should be set to true in production
+    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
+}
+BODY;
+                $templates['templates']['index']['replaces']['{setContainer}'] = <<<'BODY'
+// Build PHP-DI Container instance
+$container = $containerBuilder->build();
+
+// Instantiate the app
+AppFactory::setContainer($container);
+BODY;
                 break;
             case 'pimple':
                 $templates['templates']['settings']['replaces']['{imports}'] = "\nuse Monolog\Logger;\n" .
@@ -335,6 +353,18 @@ BODY;
     };
 
 BODY;
+
+                $templates['templates']['index']['replaces']['{containerVariable}'] = '$container';
+                $templates['templates']['index']['replaces']['{imports}'] = "use Pimple\Container;\n" .
+                    "use Slim\Factory\AppFactory;";
+                $templates['templates']['index']['replaces']['{defineContainer}'] = <<<'BODY'
+// Instantiate Pimple Container
+$container = new Container();
+BODY;
+                $templates['templates']['index']['replaces']['{setContainer}'] = <<<'BODY'
+// Instantiate the app
+AppFactory::setContainer(new \Pimple\Psr11\Container($container));
+BODY;
                 break;
             case 'other':
                 $templates['templates']['settings']['replaces']['{imports}'] = null;
@@ -344,6 +374,18 @@ BODY;
                 $templates['templates']['dependencies']['replaces']['{imports}'] = null;
                 $templates['templates']['dependencies']['replaces']['{argument}'] = '$container';
                 $templates['templates']['dependencies']['replaces']['{body}'] = "\n";
+
+                $templates['templates']['index']['replaces']['{containerVariable}'] = '$container';
+                $templates['templates']['index']['replaces']['{imports}'] = "use Slim\Factory\AppFactory;";
+                $templates['templates']['index']['replaces']['{defineContainer}'] = <<<'BODY'
+// TODO: Instantiate you'r Dependency Container
+$container = null;
+BODY;
+                $templates['templates']['index']['replaces']['{setContainer}'] = <<<'BODY'
+// Instantiate the app
+// TODO: Uncomment the line below if you created an instance of Dependency Container
+//AppFactory::setContainer($container);
+BODY;
                 break;
         }
 
