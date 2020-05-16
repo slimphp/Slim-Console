@@ -208,7 +208,7 @@ class Init extends AbstractInitProfile
         // Read templates.
         foreach ($templates['templates'] as $k => $template) {
             $templates['templates'][$k]['template'] = file_get_contents(
-                $templates['sourcePrefix'] . DIRECTORY_SEPARATOR . $template['sourceFile']
+                $templates['sourcePrefix'] . $template['sourceFile']
             );
         }
 
