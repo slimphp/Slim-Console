@@ -139,16 +139,16 @@ abstract class AbstractInitProfile implements InitProfileInterface
         $data['require'] = $require;
         $data['require-dev'] = $requireDev;
 
-        if (array() === $data['require']) {
+        if ([] === $data['require']) {
             $data['require'] = new stdClass();
         }
 
-        if (array() === $data['require-dev']) {
+        if ([] === $data['require-dev']) {
             $data['require-dev'] = new stdClass();
         }
 
         foreach ($data as $k => $v) {
-            if (array() === $v) {
+            if ([] === $v) {
                 unset($data[$k]);
             }
         }
