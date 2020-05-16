@@ -35,6 +35,11 @@ use function touch;
 class Init extends AbstractInitProfile
 {
     /**
+     * @var bool
+     */
+    private $useDefaultSetup;
+
+    /**
      * @var string
      */
     private $templatesDirectory;
@@ -51,6 +56,7 @@ class Init extends AbstractInitProfile
      */
     public function run(string $projectDirectory, bool $useDefaultSetup = false): int
     {
+        $this->useDefaultSetup = $useDefaultSetup;
         $exitCode = null;
 
         if (0 !== ($exitCode = parent::run($projectDirectory, $useDefaultSetup))) {
@@ -61,13 +67,7 @@ class Init extends AbstractInitProfile
             return $exitCode;
         }
 
-        if (0 !== ($exitCode = $this->setupDependencies($projectDirectory))) {
-            return $exitCode;
-        }
-
-        $this->io->warning('Work In Progress!');
-
-        return 0;
+        return $this->setupDependencies($projectDirectory);
     }
 
     /**
@@ -254,6 +254,7 @@ BODY;
                     "use Monolog\Logger;\n";
                 $templates['templates']['settings']['replaces']['{argument}'] = 'ContainerBuilder $containerBuilder';
                 $templates['templates']['settings']['replaces']['{body}'] = <<<'BODY'
+
     // Global Settings Object
     $containerBuilder->addDefinitions([
         'settings' => [
@@ -476,42 +477,49 @@ BODY;
                 ],
             ],
         ];
-        $dependencies = [];
+        $dependencies = [
+            'requestResponse' => $availableDependencies['requestResponse']['Slim PSR-7'],
+            'dependencyContainer' => $availableDependencies['dependencyContainer']['PHP DI'],
+            'logger' => $availableDependencies['logger']['Monolog'],
+        ];
 
-        if ($this->io->confirm('Do you want to configure the PSR-7 HTTP message interface?')) {
-            $requestResponse = $this->io->choice(
-                'Select PSR-7 implementation',
-                array_keys($availableDependencies['requestResponse']),
-                'Slim PSR-7'
-            );
+        if (!$this->useDefaultSetup) {
+            if ($this->io->confirm('Do you want to configure the PSR-7 HTTP message interface?')) {
+                $requestResponse = $this->io->choice(
+                    'Select PSR-7 implementation',
+                    array_keys($availableDependencies['requestResponse']),
+                    'Slim PSR-7'
+                );
 
-            $dependencies['requestResponse'] = $availableDependencies['requestResponse'][$requestResponse];
-        }
-
-        if ($this->io->confirm('Do you want to configure Dependency Container?')) {
-            $dependencyContainer = $this->io->choice(
-                'Select Dependency Container',
-                array_keys($availableDependencies['dependencyContainer']),
-                'PHP DI'
-            );
-
-            $dependencies['dependencyContainer'] = $availableDependencies['dependencyContainer'][$dependencyContainer];
-            if ('Other' === $dependencyContainer) {
-                $dependencies['dependencyContainer']['packages'] = [
-                    $this->io->ask('Enter Dependency Container package (<vendor>/<package>)')
-                        => $this->io->ask('Enter Dependency Container version', '*'),
-                ];
+                $dependencies['requestResponse'] = $availableDependencies['requestResponse'][$requestResponse];
             }
-        }
 
-        if ($this->io->confirm('Do you want to configure PSR-3 Logging?')) {
-            $logger = $this->io->choice(
-                'Select PSR-3 Logger',
-                array_keys($availableDependencies['logger']),
-                'Monolog'
-            );
+            if ($this->io->confirm('Do you want to configure Dependency Container?')) {
+                $dependencyContainer = $this->io->choice(
+                    'Select Dependency Container',
+                    array_keys($availableDependencies['dependencyContainer']),
+                    'PHP DI'
+                );
 
-            $dependencies['logger'] = $availableDependencies['logger'][$logger];
+                $dependencies['dependencyContainer'] =
+                    $availableDependencies['dependencyContainer'][$dependencyContainer];
+                if ('Other' === $dependencyContainer) {
+                    $dependencies['dependencyContainer']['packages'] = [
+                        $this->io->ask('Enter Dependency Container package (<vendor>/<package>)')
+                        => $this->io->ask('Enter Dependency Container version', '*'),
+                    ];
+                }
+            }
+
+            if ($this->io->confirm('Do you want to configure PSR-3 Logging?')) {
+                $logger = $this->io->choice(
+                    'Select PSR-3 Logger',
+                    array_keys($availableDependencies['logger']),
+                    'Monolog'
+                );
+
+                $dependencies['logger'] = $availableDependencies['logger'][$logger];
+            }
         }
 
         return $dependencies;
