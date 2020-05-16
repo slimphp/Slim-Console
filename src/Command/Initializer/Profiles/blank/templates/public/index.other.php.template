@@ -2,32 +2,24 @@
 
 declare(strict_types=1);
 
-use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Instantiate PHP-DI ContainerBuilder
-$containerBuilder = new ContainerBuilder();
-
-if (false) { // Should be set to true in production
-    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
-}
+// TODO: Instantiate you'r Dependency Container
+$container = null;
 
 // Set up settings
 $settings = require __DIR__ . '/../app/settings.php';
-$settings($containerBuilder);
+$settings($container);
 
 // Set up dependencies
 $dependencies = require __DIR__ . '/../app/dependencies.php';
-$dependencies($containerBuilder);
-
-
-// Build PHP-DI Container instance
-$container = $containerBuilder->build();
+$dependencies($container);
 
 // Instantiate the app
-AppFactory::setContainer($container);
+// TODO: Uncomment the line below if you created an instance of Dependency Container
+//AppFactory::setContainer($container);
 $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 

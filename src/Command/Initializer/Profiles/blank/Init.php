@@ -193,7 +193,8 @@ class Init extends AbstractInitProfile
                     'replaces' => [],
                 ],
                 'index' => [
-                    'sourceFile' => 'public' . DIRECTORY_SEPARATOR . 'index.php.template',
+                    'sourceFile' => 'public' . DIRECTORY_SEPARATOR . 'index.'
+                        . $dependencies['dependencyContainer']['id'] . '.php.template',
                     'destinationFile' => $indexDirectory . DIRECTORY_SEPARATOR . 'index.php',
                     'template' => '',
                     'replaces' => [],
