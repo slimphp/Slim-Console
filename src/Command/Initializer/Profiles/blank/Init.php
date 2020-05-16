@@ -167,27 +167,25 @@ class Init extends AbstractInitProfile
             'destinationPrefix' => $directoryFullPath . DIRECTORY_SEPARATOR,
             'templates' => [
                 'routes' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'routes.php.template',
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
                     'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
                     'template' => '',
                     'replaces' => [],
                 ],
                 'settings' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'settings.'
-                        . $dependencies['dependencyContainer']['id'] . '.php.template',
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
                     'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
                     'template' => '',
                     'replaces' => [],
                 ],
                 'dependencies' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'dependencies.'
-                        . $dependencies['dependencyContainer']['id'] . '.php.template',
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
                     'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
                     'template' => '',
                     'replaces' => [],
                 ],
                 'middleware' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'middleware.php.template',
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
                     'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php',
                     'template' => '',
                     'replaces' => [],
@@ -215,27 +213,145 @@ class Init extends AbstractInitProfile
             );
         }
 
+        $templates['templates']['routes']['replaces']['{argument}'] = 'App $app';
+        $templates['templates']['routes']['replaces']['{body}'] = <<<'BODY'
+
+    $app->options('/{routes:.*}', function (Request $request, Response $response) {
+        // CORS Pre-Flight OPTIONS Request Handler
+        return $response;
+    });
+
+    $app->get('/', function (Request $request, Response $response) {
+        $response->getBody()->write('Hello world!');
+        return $response;
+    });
+
+BODY;
+
         switch ($dependencies['requestResponse']['id']) {
             case 'slim_psr_7':
                 $templates['templates']['routes']['replaces']['{imports}'] =
-                    "use Psr\Http\Message\ResponseInterface as Response;\n" .
-                    "use Psr\Http\Message\ServerRequestInterface as Request;";
+                    "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
+                    "use Psr\Http\Message\ServerRequestInterface as Request;\nuse Slim\App;\n";
                 break;
             case 'laminas':
-                $templates['routes']['replaces']['{imports}'] = "use Laminas\Diactoros\ServerRequest as Request;\n" .
-                    "use Laminas\Diactoros\Response;";
+                $templates['templates']['routes']['replaces']['{imports}'] =
+                    "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
+                    "use Laminas\Diactoros\Response;\nuse Slim\App;\n";
                 break;
             case 'guzzle':
-                $templates['routes']['replaces']['{imports}'] = "use GuzzleHttp\Psr7\Request;\n" .
-                    "use GuzzleHttp\Psr7\Response;";
+                $templates['templates']['routes']['replaces']['{imports}'] = "\nuse GuzzleHttp\Psr7\Request;\n" .
+                    "use GuzzleHttp\Psr7\Response;\nuse Slim\App;\n";
                 break;
             case 'nyholm':
-                $templates['routes']['replaces']['{imports}'] = "use Nyholm\Psr7\ServerRequest as Request;\n" .
-                    "use Nyholm\Psr7\Response;";
+                $templates['templates']['routes']['replaces']['{imports}'] = "\nuse Nyholm\Psr7\Response;\n" .
+                    "use Nyholm\Psr7\ServerRequest as Request;\nuse Slim\App;\n";
+                break;
+        }
+
+        switch ($dependencies['dependencyContainer']['id']) {
+            case 'php_di':
+                $templates['templates']['settings']['replaces']['{imports}'] = "\nuse DI\ContainerBuilder;\n" .
+                    "use Monolog\Logger;\n";
+                $templates['templates']['settings']['replaces']['{argument}'] = 'ContainerBuilder $containerBuilder';
+                $templates['templates']['settings']['replaces']['{body}'] = <<<'BODY'
+    // Global Settings Object
+    $containerBuilder->addDefinitions([
+        'settings' => [
+            'displayErrorDetails' => true, // Should be set to false in production
+            'logger' => [
+                'name' => '{appName}',
+                'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
+                'level' => Logger::DEBUG,
+            ],
+        ],
+    ]);
+
+BODY;
+
+                $templates['templates']['dependencies']['replaces']['{imports}'] = "\nuse DI\ContainerBuilder;\n" .
+                    "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
+                    "use Psr\Container\ContainerInterface;\nuse Psr\Log\LoggerInterface;\n";
+                $templates['templates']['dependencies']['replaces']['{argument}']
+                    = 'ContainerBuilder $containerBuilder';
+                $templates['templates']['dependencies']['replaces']['{body}'] = <<<'BODY'
+
+    $containerBuilder->addDefinitions([
+        LoggerInterface::class => function (ContainerInterface $c) {
+            $settings = $c->get('settings');
+
+            $loggerSettings = $settings['logger'];
+            $logger = new Logger($loggerSettings['name']);
+                        
+            $processor = new UidProcessor();
+            $logger->pushProcessor($processor);
+                        
+            $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
+            $logger->pushHandler($handler);
+                        
+            return $logger;
+        },
+    ]);
+
+BODY;
+                break;
+            case 'pimple':
+                $templates['templates']['settings']['replaces']['{imports}'] = "\nuse Monolog\Logger;\n" .
+                    "use Pimple\Container;\n";
+                $templates['templates']['settings']['replaces']['{argument}'] = 'Container $container';
+                $templates['templates']['settings']['replaces']['{body}'] = <<<'BODY'
+
+    // Global Settings Object
+    $container['settings'] = [
+        'displayErrorDetails' => true, // Should be set to false in production
+        'logger' => [
+            'name' => '{appName}',
+            'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
+            'level' => Logger::DEBUG,
+        ],
+    ];
+
+BODY;
+
+                $templates['templates']['dependencies']['replaces']['{imports}'] =
+                    "\nuse Monolog\Handler\StreamHandler;\nuse Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
+                    "use Pimple\Container;\nuse Psr\Log\LoggerInterface;\n";
+                $templates['templates']['dependencies']['replaces']['{argument}'] = 'Container $container';
+                $templates['templates']['dependencies']['replaces']['{body}'] = <<<'BODY'
+
+    $container[LoggerInterface::class] = function ($c) {
+        $settings = $c['settings'];
+        
+        $loggerSettings = $settings['logger'];
+        $logger = new Logger($loggerSettings['name']);
+                        
+        $processor = new UidProcessor();
+        $logger->pushProcessor($processor);
+                        
+        $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
+        $logger->pushHandler($handler);
+                        
+        return $logger;
+    };
+
+BODY;
+                break;
+            case 'other':
+                $templates['templates']['settings']['replaces']['{imports}'] = null;
+                $templates['templates']['settings']['replaces']['{argument}'] = '$container';
+                $templates['templates']['settings']['replaces']['{body}'] = "\n";
+
+                $templates['templates']['dependencies']['replaces']['{imports}'] = null;
+                $templates['templates']['dependencies']['replaces']['{argument}'] = '$container';
+                $templates['templates']['dependencies']['replaces']['{body}'] = "\n";
                 break;
         }
 
         $templates['templates']['settings']['replaces']['{appName}'] = $projectDirectory;
+
+        $templates['templates']['middleware']['replaces']['{imports}'] = "\nuse Slim\App;\n";
+        $templates['templates']['middleware']['replaces']['{argument}'] = 'App $app';
+        $templates['templates']['middleware']['replaces']['{body}'] = "\n";
 
         // Replace tokens in templates and write to destination files.
         foreach ($templates['templates'] as $k => $template) {
