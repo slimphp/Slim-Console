@@ -8,8 +8,8 @@ use Monolog\Processor\UidProcessor;
 use Pimple\Container;
 use Psr\Log\LoggerInterface;
 
-return function (Container $containerBuilder) {
-    $containerBuilder[LoggerInterface::class] = function ($c) {
+return function (Container $container) {
+    $container[LoggerInterface::class] = function ($c) {
         $settings = $c['settings'];
 
         $loggerSettings = $settings['logger'];

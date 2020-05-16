@@ -173,7 +173,8 @@ class Init extends AbstractInitProfile
                     'replaces' => [],
                 ],
                 'settings' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'settings.php.template',
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'settings.'
+                        . $dependencies['dependencyContainer']['id'] . '.php.template',
                     'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
                     'template' => '',
                     'replaces' => [],
