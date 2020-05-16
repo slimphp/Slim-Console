@@ -67,7 +67,11 @@ class Init extends AbstractInitProfile
             return $exitCode;
         }
 
-        return $this->setupDependencies($projectDirectory);
+        if (0 === ($exitCode = $this->setupDependencies($projectDirectory))) {
+            $this->io->success('New Slim project successfully created. Please run `composer install`.');
+        }
+
+        return $exitCode;
     }
 
     /**

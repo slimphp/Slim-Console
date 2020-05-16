@@ -87,6 +87,8 @@ abstract class AbstractInitProfile implements InitProfileInterface
             mkdir($directoryFullPath, 0755);
         }
 
+        $this->io->title('Welcome to the Slim project Initializer');
+
         $projectData = [
             'name' => $this->io->ask('Project name (<vendor>/<name>)', get_current_user() . '/' . $projectDirectory),
             'description' => $this->io->ask('Description', ''),
