@@ -178,9 +178,9 @@ class Init extends AbstractInitProfile
                     'template' => '',
                     'replaces' => [],
                 ],
-
                 'dependencies' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'dependencies.php.template',
+                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'dependencies.'
+                        . $dependencies['dependencyContainer']['id'] . '.php.template',
                     'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
                     'template' => '',
                     'replaces' => [],
@@ -337,7 +337,7 @@ class Init extends AbstractInitProfile
 
             $dependencies['dependencyContainer'] = $availableDependencies['dependencyContainer'][$dependencyContainer];
             if ('Other' === $dependencyContainer) {
-                $dependencies['dependencyContainer'] = [
+                $dependencies['dependencyContainer']['packages'] = [
                     $this->io->ask('Enter Dependency Container package (<vendor>/<package>)')
                         => $this->io->ask('Enter Dependency Container version', '*'),
                 ];
