@@ -115,6 +115,13 @@ class Init extends AbstractInitProfile
             }
         }
 
+        if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
+            copy(
+                $this->templatesDirectory . DIRECTORY_SEPARATOR . 'docker-compose.yml.template',
+                $directoryFullPath . DIRECTORY_SEPARATOR . 'docker-compose.yml'
+            );
+        }
+
         copy(
             $this->templatesDirectory . DIRECTORY_SEPARATOR . '.gitignore.template',
             $directoryFullPath . DIRECTORY_SEPARATOR . '.gitignore'
