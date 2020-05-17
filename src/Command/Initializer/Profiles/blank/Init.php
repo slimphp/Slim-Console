@@ -119,6 +119,10 @@ class Init extends AbstractInitProfile
             $this->templatesDirectory . DIRECTORY_SEPARATOR . '.gitignore.template',
             $directoryFullPath . DIRECTORY_SEPARATOR . '.gitignore'
         );
+        copy(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . '.htaccess.template',
+            $directoryFullPath . DIRECTORY_SEPARATOR . $directoriesToCreate['index'] . DIRECTORY_SEPARATOR . '.htaccess'
+        );
 
         // Setup PHPUnit.
 
