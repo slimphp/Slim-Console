@@ -10,6 +10,15 @@ declare(strict_types=1);
 
 namespace Slim\Console\Command\Initializer\Profiles\blank;
 
+use Slim\Console\Command\Initializer\Dependency\Dependency;
+use Slim\Console\Command\Initializer\Dependency\GuzzleDependency;
+use Slim\Console\Command\Initializer\Dependency\LaminasDependency;
+use Slim\Console\Command\Initializer\Dependency\MonologDependency;
+use Slim\Console\Command\Initializer\Dependency\NyholmDependency;
+use Slim\Console\Command\Initializer\Dependency\OtherDependency;
+use Slim\Console\Command\Initializer\Dependency\PHPDIDependency;
+use Slim\Console\Command\Initializer\Dependency\PimpleDependency;
+use Slim\Console\Command\Initializer\Dependency\SlimPsr7Dependency;
 use Slim\Console\Command\Initializer\Profiles\AbstractInitProfile;
 use Slim\Console\Command\Initializer\Util\FileBuilder;
 use Slim\Console\Config\Config;
@@ -20,6 +29,7 @@ use function array_keys;
 use function copy;
 use function file_get_contents;
 use function file_put_contents;
+use function get_class;
 use function getcwd;
 use function is_dir;
 use function is_file;
@@ -178,6 +188,7 @@ class Init extends AbstractInitProfile
         $bootstrapDirectory = $this->config ? $this->config->getBootstrapDir() : 'app';
         $indexDirectory = $this->config ? $this->config->getIndexDir() : 'public';
         $dependencies = $this->askDependencies();
+        ['psr7' => $psr7, 'dependencyContainer' => $dependencyContainer, 'logger' => $logger] = $dependencies;
 
         $sourceDirPrefix = $this->templatesDirectory . DIRECTORY_SEPARATOR;
         $destinationDirPrefix = $directoryFullPath . DIRECTORY_SEPARATOR;
@@ -203,7 +214,7 @@ class Init extends AbstractInitProfile
         $indexSetContainerReplace = null;
 
         foreach ($dependencies as $dependency) {
-            foreach ($dependency['packages'] as $package => $version) {
+            foreach ($dependency->getPackages() as $package => $version) {
                 $composerJsonContent['require'][$package] = $version;
             }
         }
@@ -221,26 +232,26 @@ class Init extends AbstractInitProfile
     });
 
 BODY;
-        switch ($dependencies['psr7']['id']) {
-            case 'slim_psr_7':
+        switch (get_class($psr7)) {
+            case SlimPsr7Dependency::class:
                 $routesPSR7ImportsReplace = "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
                     "use Psr\Http\Message\ServerRequestInterface as Request;\nuse Slim\App;\n";
                 break;
-            case 'laminas':
+            case LaminasDependency::class:
                 $routesPSR7ImportsReplace = "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
                     "use Laminas\Diactoros\Response;\nuse Slim\App;\n";
                 break;
-            case 'guzzle':
+            case GuzzleDependency::class:
                 $routesPSR7ImportsReplace = "\nuse GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;\n" .
                     "use Slim\App;\n";
                 break;
-            case 'nyholm':
+            case NyholmDependency::class:
                 $routesPSR7ImportsReplace = "\nuse Nyholm\Psr7\Response;\n" .
                     "use Nyholm\Psr7\ServerRequest as Request;\nuse Slim\App;\n";
                 break;
         }
-        switch ($dependencies['dependencyContainer']['id']) {
-            case 'php_di':
+        switch (get_class($dependencyContainer)) {
+            case PHPDIDependency::class:
                 $settingsImportsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Logger;\n";
                 $settingsArgumentReplace = 'ContainerBuilder $containerBuilder';
                 $settingsBodyReplace = <<<'BODY'
@@ -302,7 +313,7 @@ $container = $containerBuilder->build();
 AppFactory::setContainer($container);
 BODY;
                 break;
-            case 'pimple':
+            case PimpleDependency::class:
                 $settingsImportsReplace = "\nuse Monolog\Logger;\nuse Pimple\Container;\n";
                 $settingsArgumentReplace = 'Container $container';
                 $settingsBodyReplace = <<<'BODY'
@@ -352,7 +363,7 @@ BODY;
 AppFactory::setContainer(new \Pimple\Psr11\Container($container));
 BODY;
                 break;
-            case 'other':
+            case OtherDependency::class:
                 $settingsImportsReplace = '';
                 $settingsArgumentReplace = '$container';
                 $settingsBodyReplace = "\n";
@@ -420,73 +431,35 @@ BODY;
     /**
      * Collect dependencies from user input.
      *
-     * @return array<array>
+     * @return array<Dependency>
      */
     protected function askDependencies(): array
     {
         $psr7 = null;
         $dependencyContainer = null;
+        $dependencyContainerOtherPackage = null;
+        $dependencyContainerOtherVersion = null;
         $logger = null;
         $availableDependencies = [
             'psr7' => [
-                'Slim PSR-7' => [
-                    'id'       => 'slim_psr_7',
-                    'packages' => [
-                        'slim/psr7' => Versions::SLIM_PSR_7,
-                    ],
-                ],
-                'Laminas' => [
-                    'id'       => 'laminas',
-                    'packages' => [
-                        'laminas/laminas-diactoros' => Versions::LAMINAS,
-                    ],
-                ],
-                'Guzzle' => [
-                    'id'       => 'guzzle',
-                    'packages' => [
-                        'guzzlehttp/psr7' => Versions::GIZZLE_PSR_7,
-                        'http-interop/http-factory-guzzle' => Versions::HTTP_FACTORY_GUZZLE,
-                    ],
-                ],
-                'Nyholm' => [
-                    'id'       => 'nyholm',
-                    'packages' => [
-                        'nyholm/psr7'        => Versions::NYHOLM_PSR_7,
-                        'nyholm/psr7-server' => Versions::NYHOLM_PSR_7_SERVER,
-                    ],
-                ],
+                SlimPsr7Dependency::NAME => new SlimPsr7Dependency(),
+                LaminasDependency::NAME  => new LaminasDependency(),
+                GuzzleDependency::NAME   => new GuzzleDependency(),
+                NyholmDependency::NAME   => new NyholmDependency(),
             ],
             'dependencyContainer' => [
-                'PHP DI' => [
-                    'id'       => 'php_di',
-                    'packages' => [
-                        'php-di/php-di' => Versions::PHP_DI,
-                    ],
-                ],
-                'Pimple' => [
-                    'id'       => 'pimple',
-                    'packages' => [
-                        'pimple/pimple' => Versions::PIMPIE,
-                    ],
-                ],
-                'Other' => [
-                    'id'       => 'other',
-                    'packages' => [],
-                ],
+                PHPDIDependency::NAME  => new PHPDIDependency(),
+                PimpleDependency::NAME => new PimpleDependency(),
+                OtherDependency::NAME  => new OtherDependency(),
             ],
             'logger' => [
-                'Monolog' => [
-                    'id'       => 'monolog',
-                    'packages' => [
-                        'monolog/monolog' => Versions::MONOLOG,
-                    ],
-                ],
+                MonologDependency::NAME => new MonologDependency(),
             ],
         ];
         $dependencies = [
-            'psr7' => $availableDependencies['psr7']['Slim PSR-7'],
-            'dependencyContainer' => $availableDependencies['dependencyContainer']['PHP DI'],
-            'logger' => $availableDependencies['logger']['Monolog'],
+            'psr7' => $availableDependencies['psr7'][SlimPsr7Dependency::NAME],
+            'dependencyContainer' => $availableDependencies['dependencyContainer'][PHPDIDependency::NAME],
+            'logger' => $availableDependencies['logger'][MonologDependency::NAME],
         ];
 
         if (!$this->useDefaultSetup) {
@@ -494,7 +467,7 @@ BODY;
                 $psr7 = $this->io->choice(
                     'Select PSR-7 implementation',
                     array_keys($availableDependencies['psr7']),
-                    'Slim PSR-7'
+                    SlimPsr7Dependency::NAME
                 );
 
                 $dependencies['psr7'] = $availableDependencies['psr7'][$psr7];
@@ -504,24 +477,30 @@ BODY;
                 $dependencyContainer = $this->io->choice(
                     'Select Dependency Container',
                     array_keys($availableDependencies['dependencyContainer']),
-                    'PHP DI'
+                    PHPDIDependency::NAME
                 );
 
-                $dependencies['dependencyContainer'] =
-                    $availableDependencies['dependencyContainer'][$dependencyContainer];
-                if ('Other' === $dependencyContainer) {
-                    $dependencies['dependencyContainer']['packages'] = [
-                        $this->io->ask('Enter Dependency Container package (<vendor>/<package>)')
-                        => $this->io->ask('Enter Dependency Container version', '*'),
-                    ];
+                $dependencyContainer = $availableDependencies['dependencyContainer'][$dependencyContainer];
+                if ($dependencyContainer instanceof OtherDependency) {
+                    $dependencyContainerOtherPackage = $this->io->ask(
+                        'Enter Dependency Container package (<vendor>/<package>)'
+                    );
+                    $dependencyContainerOtherVersion = $this->io->ask('Enter Dependency Container version', '*');
+
+                    $dependencyContainer->addPackage(
+                        $dependencyContainerOtherPackage,
+                        $dependencyContainerOtherVersion
+                    );
                 }
+
+                $dependencies['dependencyContainer'] = $dependencyContainer;
             }
 
             if ($this->io->confirm('Do you want to configure PSR-3 Logging?')) {
                 $logger = $this->io->choice(
                     'Select PSR-3 Logger',
                     array_keys($availableDependencies['logger']),
-                    'Monolog'
+                    MonologDependency::NAME
                 );
 
                 $dependencies['logger'] = $availableDependencies['logger'][$logger];
