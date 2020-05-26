@@ -460,8 +460,8 @@ BODY;
                 'Nyholm' => [
                     'id'       => 'nyholm',
                     'packages' => [
-                        'nyholm/psr7'        => Versions::NHYOLM_PSR_7,
-                        'nyholm/psr7-server' => Versions::NHYOLM_PSR_7_SERVER,
+                        'nyholm/psr7'        => Versions::NYHOLM_PSR_7,
+                        'nyholm/psr7-server' => Versions::NYHOLM_PSR_7_SERVER,
                     ],
                 ],
             ],

@@ -25,8 +25,8 @@ class Versions extends ParentVersions
     public const LAMINAS = '^2.3';
     public const GIZZLE_PSR_7 = '^1.6';
     public const HTTP_FACTORY_GUZZLE = '^1.0';
-    public const NHYOLM_PSR_7 = '^1.2';
-    public const NHYOLM_PSR_7_SERVER = '^0.4';
+    public const NYHOLM_PSR_7 = '^1.2';
+    public const NYHOLM_PSR_7_SERVER = '^0.4';
     public const PHP_DI = '^6.1';
     public const PIMPIE = '^3.0';
     public const MONOLOG = '^2.0';
