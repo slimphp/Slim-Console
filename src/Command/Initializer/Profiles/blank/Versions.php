@@ -20,14 +20,14 @@ use Slim\Console\Command\Initializer\Profiles\Versions as ParentVersions;
  */
 class Versions extends ParentVersions
 {
-    public const PHP_UNIT = '^8.5';
-    public const SLIM_PSR_7 = '^1.1';
-    public const LAMINAS = '^2.3';
     public const GIZZLE_PSR_7 = '^1.6';
     public const HTTP_FACTORY_GUZZLE = '^1.0';
+    public const LAMINAS = '^2.3';
+    public const MONOLOG = '^2.0';
     public const NYHOLM_PSR_7 = '^1.2';
     public const NYHOLM_PSR_7_SERVER = '^0.4';
     public const PHP_DI = '^6.1';
+    public const PHP_UNIT = '^8.5';
     public const PIMPIE = '^3.0';
-    public const MONOLOG = '^2.0';
+    public const SLIM_PSR_7 = '^1.1';
 }

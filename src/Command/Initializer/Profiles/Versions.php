@@ -30,7 +30,7 @@ class Versions
         throw new Exception('Class `' . __CLASS__ . '` is not instanceable.');
     }
 
+    public const EXT_JSON = '*';
     public const PHP = '^7.2';
     public const SLIM = '^4.5';
-    public const EXT_JSON = '*';
 }
