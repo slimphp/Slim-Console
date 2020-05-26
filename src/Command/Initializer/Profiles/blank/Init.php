@@ -242,7 +242,7 @@ class Init extends AbstractInitProfile
 
 BODY;
 
-        switch ($dependencies['requestResponse']['id']) {
+        switch ($dependencies['psr7']['id']) {
             case 'slim_psr_7':
                 $templates['templates']['routes']['replaces']['{imports}'] =
                     "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
@@ -433,11 +433,11 @@ BODY;
      */
     protected function askDependencies(): array
     {
-        $requestResponse = null;
+        $psr7 = null;
         $dependencyContainer = null;
         $logger = null;
         $availableDependencies = [
-            'requestResponse' => [
+            'psr7' => [
                 'Slim PSR-7' => [
                     'id'       => 'slim_psr_7',
                     'packages' => [
@@ -493,20 +493,20 @@ BODY;
             ],
         ];
         $dependencies = [
-            'requestResponse' => $availableDependencies['requestResponse']['Slim PSR-7'],
+            'psr7' => $availableDependencies['psr7']['Slim PSR-7'],
             'dependencyContainer' => $availableDependencies['dependencyContainer']['PHP DI'],
             'logger' => $availableDependencies['logger']['Monolog'],
         ];
 
         if (!$this->useDefaultSetup) {
             if ($this->io->confirm('Do you want to configure the PSR-7 HTTP message interface?')) {
-                $requestResponse = $this->io->choice(
+                $psr7 = $this->io->choice(
                     'Select PSR-7 implementation',
-                    array_keys($availableDependencies['requestResponse']),
+                    array_keys($availableDependencies['psr7']),
                     'Slim PSR-7'
                 );
 
-                $dependencies['requestResponse'] = $availableDependencies['requestResponse'][$requestResponse];
+                $dependencies['psr7'] = $availableDependencies['psr7'][$psr7];
             }
 
             if ($this->io->confirm('Do you want to configure Dependency Container?')) {
