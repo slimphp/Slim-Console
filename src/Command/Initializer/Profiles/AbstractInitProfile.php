@@ -20,7 +20,6 @@ use function array_merge;
 use function file_get_contents;
 use function file_put_contents;
 use function getcwd;
-use function is_array;
 use function is_dir;
 use function is_file;
 use function json_decode;
@@ -77,7 +76,7 @@ abstract class AbstractInitProfile implements InitProfileInterface
         $directoryFullPath = getcwd() . DIRECTORY_SEPARATOR . $projectDirectory;
         $directoryContent = is_dir($directoryFullPath) ? scandir($directoryFullPath) : [];
 
-        if (is_dir($directoryFullPath) && is_array($directoryContent) && count($directoryContent) > 2) {
+        if (count($directoryContent) > 2) {
             $this->io->error("Project directory `{$projectDirectory}` is not empty!");
 
             return -1;
