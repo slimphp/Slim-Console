@@ -10,10 +10,9 @@ This profile creates an empty Slim 4 project interactively or with default setti
 project-name
 └───app
 │   │   dependencies.php
-│   │   middleware.php
 │   │   routes.php
 │   │   settings.php
-│   
+│
 └───logs
 |   |   *empty*
 |

@@ -106,7 +106,6 @@ class Init extends AbstractInitProfile
         ];
         $filesToCreate = [
             $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'dependencies.php',
-            $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'middleware.php',
             $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'routes.php',
             $directoriesToCreate['bootstrap'] . DIRECTORY_SEPARATOR . 'settings.php',
 
@@ -197,7 +196,6 @@ class Init extends AbstractInitProfile
         $routesFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
         $settingsFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
         $dependenciesFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
-        $middlewareFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
         $indexFileBuilder = new FileBuilder($sourceDirPrefix . 'public' . DIRECTORY_SEPARATOR . 'index.php.template');
 
         $routesBodyReplace = null;
@@ -400,10 +398,6 @@ BODY;
         $indexFileBuilder->setReplaceToken('{defineContainer}', $indexDefineContainerReplace);
         $indexFileBuilder->setReplaceToken('{setContainer}', $indexSetContainerReplace);
 
-        $middlewareFileBuilder->setReplaceToken('{imports}', "\nuse Slim\App;\n");
-        $middlewareFileBuilder->setReplaceToken('{argument}', 'App $app');
-        $middlewareFileBuilder->setReplaceToken('{body}', "\n");
-
         $routesFileBuilder->setReplaceToken('{argument}', 'App $app');
         $routesFileBuilder->setReplaceToken('{body}', $routesBodyReplace);
         $routesFileBuilder->setReplaceToken('{imports}', $routesPSR7ImportsReplace);
@@ -417,9 +411,6 @@ BODY;
         );
         $dependenciesFileBuilder->buildFile(
             $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php'
-        );
-        $middlewareFileBuilder->buildFile(
-            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php'
         );
         $indexFileBuilder->buildFile(
             $destinationDirPrefix . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php'
