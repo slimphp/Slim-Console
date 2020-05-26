@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Slim\Console\Command\Initializer\Profiles\blank;
 
 use Slim\Console\Command\Initializer\Profiles\AbstractInitProfile;
+use Slim\Console\Command\Initializer\Util\FileBuilder;
 use Slim\Console\Config\Config;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -177,42 +178,29 @@ class Init extends AbstractInitProfile
         $bootstrapDirectory = $this->config ? $this->config->getBootstrapDir() : 'app';
         $indexDirectory = $this->config ? $this->config->getIndexDir() : 'public';
         $dependencies = $this->askDependencies();
-        $templates = [
-            'sourcePrefix' => $this->templatesDirectory . DIRECTORY_SEPARATOR,
-            'destinationPrefix' => $directoryFullPath . DIRECTORY_SEPARATOR,
-            'templates' => [
-                'routes' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
-                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
-                    'template' => '',
-                    'replaces' => [],
-                ],
-                'settings' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
-                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
-                    'template' => '',
-                    'replaces' => [],
-                ],
-                'dependencies' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
-                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
-                    'template' => '',
-                    'replaces' => [],
-                ],
-                'middleware' => [
-                    'sourceFile' => 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template',
-                    'destinationFile' => $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php',
-                    'template' => '',
-                    'replaces' => [],
-                ],
-                'index' => [
-                    'sourceFile' => 'public' . DIRECTORY_SEPARATOR . 'index.php.template',
-                    'destinationFile' => $indexDirectory . DIRECTORY_SEPARATOR . 'index.php',
-                    'template' => '',
-                    'replaces' => [],
-                ],
-            ],
-        ];
+
+        $sourceDirPrefix = $this->templatesDirectory . DIRECTORY_SEPARATOR;
+        $destinationDirPrefix = $directoryFullPath . DIRECTORY_SEPARATOR;
+        $returnFunctionSkeletonFile = $sourceDirPrefix . 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template';
+
+        $routesFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
+        $settingsFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
+        $dependenciesFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
+        $middlewareFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
+        $indexFileBuilder = new FileBuilder($sourceDirPrefix . 'public' . DIRECTORY_SEPARATOR . 'index.php.template');
+
+        $routesBodyReplace = null;
+        $routesPSR7ImportsReplace = null;
+        $settingsImportsReplace = null;
+        $settingsArgumentReplace = null;
+        $settingsBodyReplace = null;
+        $dependenciesImportsReplace = null;
+        $dependenciesArgumentReplace = null;
+        $dependenciesBodyReplace = null;
+        $indexContainerVariableReplace = null;
+        $indexImportsReplace = null;
+        $indexDefineContainerReplace = null;
+        $indexSetContainerReplace = null;
 
         foreach ($dependencies as $dependency) {
             foreach ($dependency['packages'] as $package => $version) {
@@ -220,15 +208,7 @@ class Init extends AbstractInitProfile
             }
         }
 
-        // Read templates.
-        foreach ($templates['templates'] as $k => $template) {
-            $templates['templates'][$k]['template'] = file_get_contents(
-                $templates['sourcePrefix'] . $template['sourceFile']
-            );
-        }
-
-        $templates['templates']['routes']['replaces']['{argument}'] = 'App $app';
-        $templates['templates']['routes']['replaces']['{body}'] = <<<'BODY'
+        $routesBodyReplace = <<<'BODY'
 
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
         // CORS Pre-Flight OPTIONS Request Handler
@@ -241,34 +221,29 @@ class Init extends AbstractInitProfile
     });
 
 BODY;
-
         switch ($dependencies['psr7']['id']) {
             case 'slim_psr_7':
-                $templates['templates']['routes']['replaces']['{imports}'] =
-                    "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
+                $routesPSR7ImportsReplace = "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
                     "use Psr\Http\Message\ServerRequestInterface as Request;\nuse Slim\App;\n";
                 break;
             case 'laminas':
-                $templates['templates']['routes']['replaces']['{imports}'] =
-                    "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
+                $routesPSR7ImportsReplace = "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
                     "use Laminas\Diactoros\Response;\nuse Slim\App;\n";
                 break;
             case 'guzzle':
-                $templates['templates']['routes']['replaces']['{imports}'] = "\nuse GuzzleHttp\Psr7\Request;\n" .
-                    "use GuzzleHttp\Psr7\Response;\nuse Slim\App;\n";
+                $routesPSR7ImportsReplace = "\nuse GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;\n" .
+                    "use Slim\App;\n";
                 break;
             case 'nyholm':
-                $templates['templates']['routes']['replaces']['{imports}'] = "\nuse Nyholm\Psr7\Response;\n" .
+                $routesPSR7ImportsReplace = "\nuse Nyholm\Psr7\Response;\n" .
                     "use Nyholm\Psr7\ServerRequest as Request;\nuse Slim\App;\n";
                 break;
         }
-
         switch ($dependencies['dependencyContainer']['id']) {
             case 'php_di':
-                $templates['templates']['settings']['replaces']['{imports}'] = "\nuse DI\ContainerBuilder;\n" .
-                    "use Monolog\Logger;\n";
-                $templates['templates']['settings']['replaces']['{argument}'] = 'ContainerBuilder $containerBuilder';
-                $templates['templates']['settings']['replaces']['{body}'] = <<<'BODY'
+                $settingsImportsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Logger;\n";
+                $settingsArgumentReplace = 'ContainerBuilder $containerBuilder';
+                $settingsBodyReplace = <<<'BODY'
 
     // Global Settings Object
     $containerBuilder->addDefinitions([
@@ -284,12 +259,11 @@ BODY;
 
 BODY;
 
-                $templates['templates']['dependencies']['replaces']['{imports}'] = "\nuse DI\ContainerBuilder;\n" .
-                    "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
+                $dependenciesImportsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Handler\StreamHandler;\n" .
+                    "use Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
                     "use Psr\Container\ContainerInterface;\nuse Psr\Log\LoggerInterface;\n";
-                $templates['templates']['dependencies']['replaces']['{argument}']
-                    = 'ContainerBuilder $containerBuilder';
-                $templates['templates']['dependencies']['replaces']['{body}'] = <<<'BODY'
+                $dependenciesArgumentReplace = 'ContainerBuilder $containerBuilder';
+                $dependenciesBodyReplace = <<<'BODY'
 
     $containerBuilder->addDefinitions([
         LoggerInterface::class => function (ContainerInterface $c) {
@@ -310,10 +284,9 @@ BODY;
 
 BODY;
 
-                $templates['templates']['index']['replaces']['{containerVariable}'] = '$containerBuilder';
-                $templates['templates']['index']['replaces']['{imports}'] = "use DI\ContainerBuilder;\n" .
-                    "use Slim\Factory\AppFactory;";
-                $templates['templates']['index']['replaces']['{defineContainer}'] = <<<'BODY'
+                $indexContainerVariableReplace = '$containerBuilder';
+                $indexImportsReplace = "use DI\ContainerBuilder;\nuse Slim\Factory\AppFactory;";
+                $indexDefineContainerReplace = <<<'BODY'
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
 
@@ -321,7 +294,7 @@ if (false) { // Should be set to true in production
     $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
 }
 BODY;
-                $templates['templates']['index']['replaces']['{setContainer}'] = <<<'BODY'
+                $indexSetContainerReplace = <<<'BODY'
 // Build PHP-DI Container instance
 $container = $containerBuilder->build();
 
@@ -330,10 +303,9 @@ AppFactory::setContainer($container);
 BODY;
                 break;
             case 'pimple':
-                $templates['templates']['settings']['replaces']['{imports}'] = "\nuse Monolog\Logger;\n" .
-                    "use Pimple\Container;\n";
-                $templates['templates']['settings']['replaces']['{argument}'] = 'Container $container';
-                $templates['templates']['settings']['replaces']['{body}'] = <<<'BODY'
+                $settingsImportsReplace = "\nuse Monolog\Logger;\nuse Pimple\Container;\n";
+                $settingsArgumentReplace = 'Container $container';
+                $settingsBodyReplace = <<<'BODY'
 
     // Global Settings Object
     $container['settings'] = [
@@ -347,11 +319,10 @@ BODY;
 
 BODY;
 
-                $templates['templates']['dependencies']['replaces']['{imports}'] =
-                    "\nuse Monolog\Handler\StreamHandler;\nuse Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
-                    "use Pimple\Container;\nuse Psr\Log\LoggerInterface;\n";
-                $templates['templates']['dependencies']['replaces']['{argument}'] = 'Container $container';
-                $templates['templates']['dependencies']['replaces']['{body}'] = <<<'BODY'
+                $dependenciesImportsReplace = "\nuse Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                    "\nuse Monolog\Processor\UidProcessor;\nuse Pimple\Container;\nuse Psr\Log\LoggerInterface;\n";
+                $dependenciesArgumentReplace = 'Container $container';
+                $dependenciesBodyReplace = <<<'BODY'
 
     $container[LoggerInterface::class] = function ($c) {
         $settings = $c['settings'];
@@ -370,34 +341,33 @@ BODY;
 
 BODY;
 
-                $templates['templates']['index']['replaces']['{containerVariable}'] = '$container';
-                $templates['templates']['index']['replaces']['{imports}'] = "use Pimple\Container;\n" .
-                    "use Slim\Factory\AppFactory;";
-                $templates['templates']['index']['replaces']['{defineContainer}'] = <<<'BODY'
+                $indexContainerVariableReplace = '$container';
+                $indexImportsReplace = "use Pimple\Container;\nuse Slim\Factory\AppFactory;";
+                $indexDefineContainerReplace = <<<'BODY'
 // Instantiate Pimple Container
 $container = new Container();
 BODY;
-                $templates['templates']['index']['replaces']['{setContainer}'] = <<<'BODY'
+                $indexSetContainerReplace = <<<'BODY'
 // Instantiate the app
 AppFactory::setContainer(new \Pimple\Psr11\Container($container));
 BODY;
                 break;
             case 'other':
-                $templates['templates']['settings']['replaces']['{imports}'] = null;
-                $templates['templates']['settings']['replaces']['{argument}'] = '$container';
-                $templates['templates']['settings']['replaces']['{body}'] = "\n";
+                $settingsImportsReplace = '';
+                $settingsArgumentReplace = '$container';
+                $settingsBodyReplace = "\n";
 
-                $templates['templates']['dependencies']['replaces']['{imports}'] = null;
-                $templates['templates']['dependencies']['replaces']['{argument}'] = '$container';
-                $templates['templates']['dependencies']['replaces']['{body}'] = "\n";
+                $dependenciesImportsReplace = '';
+                $dependenciesArgumentReplace = '$container';
+                $dependenciesBodyReplace = "\n";
 
-                $templates['templates']['index']['replaces']['{containerVariable}'] = '$container';
-                $templates['templates']['index']['replaces']['{imports}'] = "use Slim\Factory\AppFactory;";
-                $templates['templates']['index']['replaces']['{defineContainer}'] = <<<'BODY'
+                $indexContainerVariableReplace = '$container';
+                $indexImportsReplace = "use Slim\Factory\AppFactory;";
+                $indexDefineContainerReplace = <<<'BODY'
 // TODO: Instantiate you'r Dependency Container
 $container = null;
 BODY;
-                $templates['templates']['index']['replaces']['{setContainer}'] = <<<'BODY'
+                $indexSetContainerReplace = <<<'BODY'
 // Instantiate the app
 // TODO: Uncomment the line below if you created an instance of Dependency Container
 //AppFactory::setContainer($container);
@@ -405,23 +375,44 @@ BODY;
                 break;
         }
 
-        $templates['templates']['settings']['replaces']['{appName}'] = $projectDirectory;
+        $settingsFileBuilder->setReplaceToken('{imports}', $settingsImportsReplace);
+        $settingsFileBuilder->setReplaceToken('{argument}', $settingsArgumentReplace);
+        $settingsFileBuilder->setReplaceToken('{body}', $settingsBodyReplace);
+        $settingsFileBuilder->setReplaceToken('{appName}', $projectDirectory);
 
-        $templates['templates']['middleware']['replaces']['{imports}'] = "\nuse Slim\App;\n";
-        $templates['templates']['middleware']['replaces']['{argument}'] = 'App $app';
-        $templates['templates']['middleware']['replaces']['{body}'] = "\n";
+        $dependenciesFileBuilder->setReplaceToken('{imports}', $dependenciesImportsReplace);
+        $dependenciesFileBuilder->setReplaceToken('{argument}', $dependenciesArgumentReplace);
+        $dependenciesFileBuilder->setReplaceToken('{body}', $dependenciesBodyReplace);
 
-        // Replace tokens in templates and write to destination files.
-        foreach ($templates['templates'] as $k => $template) {
-            foreach ($template['replaces'] as $token => $replace) {
-                $template['template'] = str_replace($token, $replace, (string)$template['template']);
-            }
+        $indexFileBuilder->setReplaceToken('{containerVariable}', $indexContainerVariableReplace);
+        $indexFileBuilder->setReplaceToken('{imports}', $indexImportsReplace);
+        $indexFileBuilder->setReplaceToken('{defineContainer}', $indexDefineContainerReplace);
+        $indexFileBuilder->setReplaceToken('{setContainer}', $indexSetContainerReplace);
 
-            file_put_contents(
-                $templates['destinationPrefix'] . $template['destinationFile'],
-                $template['template']
-            );
-        }
+        $middlewareFileBuilder->setReplaceToken('{imports}', "\nuse Slim\App;\n");
+        $middlewareFileBuilder->setReplaceToken('{argument}', 'App $app');
+        $middlewareFileBuilder->setReplaceToken('{body}', "\n");
+
+        $routesFileBuilder->setReplaceToken('{argument}', 'App $app');
+        $routesFileBuilder->setReplaceToken('{body}', $routesBodyReplace);
+        $routesFileBuilder->setReplaceToken('{imports}', $routesPSR7ImportsReplace);
+
+        // Write to destination files.
+        $routesFileBuilder->buildFile(
+            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php'
+        );
+        $settingsFileBuilder->buildFile(
+            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php'
+        );
+        $dependenciesFileBuilder->buildFile(
+            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php'
+        );
+        $middlewareFileBuilder->buildFile(
+            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'middleware.php'
+        );
+        $indexFileBuilder->buildFile(
+            $destinationDirPrefix . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php'
+        );
 
         return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
     }
