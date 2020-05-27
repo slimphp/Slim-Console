@@ -17,8 +17,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 use function array_merge;
+use function count;
 use function file_get_contents;
 use function file_put_contents;
+use function get_current_user;
 use function getcwd;
 use function is_dir;
 use function is_file;
@@ -27,6 +29,10 @@ use function json_encode;
 use function ksort;
 use function mkdir;
 use function scandir;
+
+use const DIRECTORY_SEPARATOR;
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
 
 /**
  * Class AbstractInitProfile.

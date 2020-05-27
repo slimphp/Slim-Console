@@ -24,6 +24,9 @@ use function in_array;
 use function is_array;
 use function is_string;
 
+use const DIRECTORY_SEPARATOR;
+use const GLOB_ONLYDIR;
+
 /**
  * Class InitCommand.
  *

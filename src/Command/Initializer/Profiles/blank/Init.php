@@ -37,6 +37,8 @@ use function mkdir;
 use function str_replace;
 use function touch;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * Init class implementation for profile Blank.
  *
@@ -55,6 +57,9 @@ class Init extends AbstractInitProfile
      */
     private $templatesDirectory;
 
+    /**
+     * {@inheritDoc}
+     */
     public function __construct(InputInterface $input, OutputInterface $output, ?Config $config = null)
     {
         parent::__construct($input, $output, $config);
