@@ -187,34 +187,16 @@ class Init extends AbstractInitProfile
      */
     protected function setupDependencies(string $projectDirectory): int
     {
+        $exitCode = null;
         $directoryFullPath = getcwd() . DIRECTORY_SEPARATOR . $projectDirectory;
         $composerJsonContent = $this->readComposerJson($directoryFullPath);
         $bootstrapDirectory = $this->config ? $this->config->getBootstrapDir() : 'app';
         $indexDirectory = $this->config ? $this->config->getIndexDir() : 'public';
-        $dependencies = $this->askDependencies();
-        ['psr7' => $psr7, 'dependencyContainer' => $dependencyContainer, 'logger' => $logger] = $dependencies;
-
         $sourceDirPrefix = $this->templatesDirectory . DIRECTORY_SEPARATOR;
         $destinationDirPrefix = $directoryFullPath . DIRECTORY_SEPARATOR;
         $returnFunctionSkeletonFile = $sourceDirPrefix . 'app' . DIRECTORY_SEPARATOR . 'return_function.php.template';
-
-        $routesFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
-        $settingsFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
-        $dependenciesFileBuilder = new FileBuilder($returnFunctionSkeletonFile);
-        $indexFileBuilder = new FileBuilder($sourceDirPrefix . 'public' . DIRECTORY_SEPARATOR . 'index.php.template');
-
-        $routesBodyReplace = null;
-        $routesPSR7ImportsReplace = null;
-        $settingsImportsReplace = null;
-        $settingsArgumentReplace = null;
-        $settingsBodyReplace = null;
-        $dependenciesImportsReplace = null;
-        $dependenciesArgumentReplace = null;
-        $dependenciesBodyReplace = null;
-        $indexContainerVariableReplace = null;
-        $indexImportsReplace = null;
-        $indexDefineContainerReplace = null;
-        $indexSetContainerReplace = null;
+        $dependencies = $this->askDependencies();
+        ['psr7' => $psr7, 'dependencyContainer' => $dependencyContainer, 'logger' => $logger] = $dependencies;
 
         foreach ($dependencies as $dependency) {
             foreach ($dependency->getPackages() as $package => $version) {
@@ -222,7 +204,63 @@ class Init extends AbstractInitProfile
             }
         }
 
-        $routesBodyReplace = <<<'BODY'
+        if (
+            0 !== ($exitCode = $this->buildRoutesFile(
+                $returnFunctionSkeletonFile,
+                $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php',
+                $psr7
+            ))
+        ) {
+            return $exitCode;
+        }
+
+        if (
+            0 !== ($exitCode = $this->buildSettingsFile(
+                $returnFunctionSkeletonFile,
+                $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
+                $dependencyContainer,
+                ['projectDirectory' => $projectDirectory]
+            ))
+        ) {
+            return $exitCode;
+        }
+
+        if (
+            0 !== ($exitCode = $this->buildDependenciesFile(
+                $returnFunctionSkeletonFile,
+                $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
+                $dependencyContainer
+            ))
+        ) {
+            return $exitCode;
+        }
+
+        if (
+            0 !== ($exitCode = $this->buildIndexFile(
+                $sourceDirPrefix . 'public' . DIRECTORY_SEPARATOR . 'index.php.template',
+                $destinationDirPrefix . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php',
+                $dependencyContainer
+            ))
+        ) {
+            return $exitCode;
+        }
+
+        return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
+    }
+
+    /**
+     * Build a routes file from the template.
+     *
+     * @param string     $templatePath    Template file path.
+     * @param string     $destinationFile Destination file to write to.
+     * @param Dependency $psr7            PSR-7 Implementation Dependency.
+     *
+     * @return int The Exit Code.
+     */
+    private function buildRoutesFile(string $templatePath, string $destinationFile, Dependency $psr7): int
+    {
+        $PSR7ImportsReplace = null;
+        $bodyReplace = <<<'BODY'
 
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
         // CORS Pre-Flight OPTIONS Request Handler
@@ -235,29 +273,60 @@ class Init extends AbstractInitProfile
     });
 
 BODY;
+
         switch (get_class($psr7)) {
             case SlimPsr7Dependency::class:
-                $routesPSR7ImportsReplace = "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
+                $PSR7ImportsReplace = "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
                     "use Psr\Http\Message\ServerRequestInterface as Request;\nuse Slim\App;\n";
                 break;
             case LaminasDependency::class:
-                $routesPSR7ImportsReplace = "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
+                $PSR7ImportsReplace = "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
                     "use Laminas\Diactoros\Response;\nuse Slim\App;\n";
                 break;
             case GuzzleDependency::class:
-                $routesPSR7ImportsReplace = "\nuse GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;\n" .
-                    "use Slim\App;\n";
+                $PSR7ImportsReplace = "\nuse GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;\nuse Slim\App;\n";
                 break;
             case NyholmDependency::class:
-                $routesPSR7ImportsReplace = "\nuse Nyholm\Psr7\Response;\n" .
-                    "use Nyholm\Psr7\ServerRequest as Request;\nuse Slim\App;\n";
+                $PSR7ImportsReplace = "\nuse Nyholm\Psr7\Response;\nuse Nyholm\Psr7\ServerRequest as Request;\n" .
+                    "use Slim\App;\n";
                 break;
         }
+
+        (new FileBuilder($templatePath))
+            ->setReplaceToken('{argument}', 'App $app')
+            ->setReplaceToken('{body}', $bodyReplace)
+            ->setReplaceToken('{imports}', $PSR7ImportsReplace)
+            ->buildFile($destinationFile);
+
+        return 0;
+    }
+
+    /**
+     * Build a settings file from the template.
+     *
+     * @param string       $templatePath        Template file path.
+     * @param string       $destinationFile     Destination file to write to.
+     * @param Dependency   $dependencyContainer Dependency Container Dependency.
+     * @param array<mixed> $additional          Additional parameters.
+     *
+     * @return int The Exit Code.
+     */
+    private function buildSettingsFile(
+        string $templatePath,
+        string $destinationFile,
+        Dependency $dependencyContainer,
+        array $additional = []
+    ): int {
+        $importsReplace = null;
+        $argumentReplace = null;
+        $bodyReplace = null;
+        ['projectDirectory' => $projectDirectory] = $additional;
+
         switch (get_class($dependencyContainer)) {
             case PHPDIDependency::class:
-                $settingsImportsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Logger;\n";
-                $settingsArgumentReplace = 'ContainerBuilder $containerBuilder';
-                $settingsBodyReplace = <<<'BODY'
+                $importsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Logger;\n";
+                $argumentReplace = 'ContainerBuilder $containerBuilder';
+                $bodyReplace = <<<'BODY'
 
     // Global Settings Object
     $containerBuilder->addDefinitions([
@@ -272,12 +341,66 @@ BODY;
     ]);
 
 BODY;
+                break;
+            case PimpleDependency::class:
+                $importsReplace = "\nuse Monolog\Logger;\nuse Pimple\Container;\n";
+                $argumentReplace = 'Container $container';
+                $bodyReplace = <<<'BODY'
 
-                $dependenciesImportsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Handler\StreamHandler;\n" .
+    // Global Settings Object
+    $container['settings'] = [
+        'displayErrorDetails' => true, // Should be set to false in production
+        'logger' => [
+            'name' => '{appName}',
+            'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
+            'level' => Logger::DEBUG,
+        ],
+    ];
+
+BODY;
+                break;
+            case OtherDependency::class:
+                $importsReplace = '';
+                $argumentReplace = '$container';
+                $bodyReplace = "\n";
+                break;
+        }
+
+        (new FileBuilder($templatePath))
+            ->setReplaceToken('{imports}', $importsReplace)
+            ->setReplaceToken('{argument}', $argumentReplace)
+            ->setReplaceToken('{body}', $bodyReplace)
+            ->setReplaceToken('{appName}', $projectDirectory)
+            ->buildFile($destinationFile);
+
+        return 0;
+    }
+
+    /**
+     * Build a dependencies file from the template.
+     *
+     * @param string     $templatePath        Template file path.
+     * @param string     $destinationFile     Destination file to write to.
+     * @param Dependency $dependencyContainer Dependency Container Dependency.
+     *
+     * @return int The Exit Code.
+     */
+    private function buildDependenciesFile(
+        string $templatePath,
+        string $destinationFile,
+        Dependency $dependencyContainer
+    ): int {
+        $importsReplace = null;
+        $argumentReplace = null;
+        $bodyReplace = null;
+
+        switch (get_class($dependencyContainer)) {
+            case PHPDIDependency::class:
+                $importsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Handler\StreamHandler;\n" .
                     "use Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
                     "use Psr\Container\ContainerInterface;\nuse Psr\Log\LoggerInterface;\n";
-                $dependenciesArgumentReplace = 'ContainerBuilder $containerBuilder';
-                $dependenciesBodyReplace = <<<'BODY'
+                $argumentReplace = 'ContainerBuilder $containerBuilder';
+                $bodyReplace = <<<'BODY'
 
     $containerBuilder->addDefinitions([
         LoggerInterface::class => function (ContainerInterface $c) {
@@ -297,46 +420,12 @@ BODY;
     ]);
 
 BODY;
-
-                $indexContainerVariableReplace = '$containerBuilder';
-                $indexImportsReplace = "use DI\ContainerBuilder;\nuse Slim\Factory\AppFactory;";
-                $indexDefineContainerReplace = <<<'BODY'
-// Instantiate PHP-DI ContainerBuilder
-$containerBuilder = new ContainerBuilder();
-
-if (false) { // Should be set to true in production
-    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
-}
-BODY;
-                $indexSetContainerReplace = <<<'BODY'
-// Build PHP-DI Container instance
-$container = $containerBuilder->build();
-
-// Instantiate the app
-AppFactory::setContainer($container);
-BODY;
                 break;
             case PimpleDependency::class:
-                $settingsImportsReplace = "\nuse Monolog\Logger;\nuse Pimple\Container;\n";
-                $settingsArgumentReplace = 'Container $container';
-                $settingsBodyReplace = <<<'BODY'
-
-    // Global Settings Object
-    $container['settings'] = [
-        'displayErrorDetails' => true, // Should be set to false in production
-        'logger' => [
-            'name' => '{appName}',
-            'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
-            'level' => Logger::DEBUG,
-        ],
-    ];
-
-BODY;
-
-                $dependenciesImportsReplace = "\nuse Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                $importsReplace = "\nuse Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
                     "\nuse Monolog\Processor\UidProcessor;\nuse Pimple\Container;\nuse Psr\Log\LoggerInterface;\n";
-                $dependenciesArgumentReplace = 'Container $container';
-                $dependenciesBodyReplace = <<<'BODY'
+                $argumentReplace = 'Container $container';
+                $bodyReplace = <<<'BODY'
 
     $container[LoggerInterface::class] = function ($c) {
         $settings = $c['settings'];
@@ -354,34 +443,82 @@ BODY;
     };
 
 BODY;
+                break;
+            case OtherDependency::class:
+                $importsReplace = '';
+                $argumentReplace = '$container';
+                $bodyReplace = "\n";
+                break;
+        }
 
-                $indexContainerVariableReplace = '$container';
-                $indexImportsReplace = "use Pimple\Container;\nuse Slim\Factory\AppFactory;";
-                $indexDefineContainerReplace = <<<'BODY'
+        (new FileBuilder($templatePath))
+            ->setReplaceToken('{imports}', $importsReplace)
+            ->setReplaceToken('{argument}', $argumentReplace)
+            ->setReplaceToken('{body}', $bodyReplace)
+            ->buildFile($destinationFile);
+
+        return 0;
+    }
+
+    /**
+     * Build a index file from the template.
+     *
+     * @param string     $templatePath        Template file path.
+     * @param string     $destinationFile     Destination file to write to.
+     * @param Dependency $dependencyContainer Dependency Container Dependency.
+     *
+     * @return int The Exit Code.
+     */
+    private function buildIndexFile(
+        string $templatePath,
+        string $destinationFile,
+        Dependency $dependencyContainer
+    ): int {
+        $containerVariableReplace = null;
+        $importsReplace = null;
+        $defineContainerReplace = null;
+        $setContainerReplace = null;
+
+        switch (get_class($dependencyContainer)) {
+            case PHPDIDependency::class:
+                $containerVariableReplace = '$containerBuilder';
+                $importsReplace = "use DI\ContainerBuilder;\nuse Slim\Factory\AppFactory;";
+                $defineContainerReplace = <<<'BODY'
+// Instantiate PHP-DI ContainerBuilder
+$containerBuilder = new ContainerBuilder();
+
+if (false) { // Should be set to true in production
+    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
+}
+BODY;
+                $setContainerReplace = <<<'BODY'
+// Build PHP-DI Container instance
+$container = $containerBuilder->build();
+
+// Instantiate the app
+AppFactory::setContainer($container);
+BODY;
+                break;
+            case PimpleDependency::class:
+                $containerVariableReplace = '$container';
+                $importsReplace = "use Pimple\Container;\nuse Slim\Factory\AppFactory;";
+                $defineContainerReplace = <<<'BODY'
 // Instantiate Pimple Container
 $container = new Container();
 BODY;
-                $indexSetContainerReplace = <<<'BODY'
+                $setContainerReplace = <<<'BODY'
 // Instantiate the app
 AppFactory::setContainer(new \Pimple\Psr11\Container($container));
 BODY;
                 break;
             case OtherDependency::class:
-                $settingsImportsReplace = '';
-                $settingsArgumentReplace = '$container';
-                $settingsBodyReplace = "\n";
-
-                $dependenciesImportsReplace = '';
-                $dependenciesArgumentReplace = '$container';
-                $dependenciesBodyReplace = "\n";
-
-                $indexContainerVariableReplace = '$container';
-                $indexImportsReplace = "use Slim\Factory\AppFactory;";
-                $indexDefineContainerReplace = <<<'BODY'
+                $containerVariableReplace = '$container';
+                $importsReplace = "use Slim\Factory\AppFactory;";
+                $defineContainerReplace = <<<'BODY'
 // TODO: Instantiate you'r Dependency Container
 $container = null;
 BODY;
-                $indexSetContainerReplace = <<<'BODY'
+                $setContainerReplace = <<<'BODY'
 // Instantiate the app
 // TODO: Uncomment the line below if you created an instance of Dependency Container
 //AppFactory::setContainer($container);
@@ -389,39 +526,14 @@ BODY;
                 break;
         }
 
-        $settingsFileBuilder->setReplaceToken('{imports}', $settingsImportsReplace);
-        $settingsFileBuilder->setReplaceToken('{argument}', $settingsArgumentReplace);
-        $settingsFileBuilder->setReplaceToken('{body}', $settingsBodyReplace);
-        $settingsFileBuilder->setReplaceToken('{appName}', $projectDirectory);
+        (new FileBuilder($templatePath))
+            ->setReplaceToken('{containerVariable}', $containerVariableReplace)
+            ->setReplaceToken('{imports}', $importsReplace)
+            ->setReplaceToken('{defineContainer}', $defineContainerReplace)
+            ->setReplaceToken('{setContainer}', $setContainerReplace)
+            ->buildFile($destinationFile);
 
-        $dependenciesFileBuilder->setReplaceToken('{imports}', $dependenciesImportsReplace);
-        $dependenciesFileBuilder->setReplaceToken('{argument}', $dependenciesArgumentReplace);
-        $dependenciesFileBuilder->setReplaceToken('{body}', $dependenciesBodyReplace);
-
-        $indexFileBuilder->setReplaceToken('{containerVariable}', $indexContainerVariableReplace);
-        $indexFileBuilder->setReplaceToken('{imports}', $indexImportsReplace);
-        $indexFileBuilder->setReplaceToken('{defineContainer}', $indexDefineContainerReplace);
-        $indexFileBuilder->setReplaceToken('{setContainer}', $indexSetContainerReplace);
-
-        $routesFileBuilder->setReplaceToken('{argument}', 'App $app');
-        $routesFileBuilder->setReplaceToken('{body}', $routesBodyReplace);
-        $routesFileBuilder->setReplaceToken('{imports}', $routesPSR7ImportsReplace);
-
-        // Write to destination files.
-        $routesFileBuilder->buildFile(
-            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'routes.php'
-        );
-        $settingsFileBuilder->buildFile(
-            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php'
-        );
-        $dependenciesFileBuilder->buildFile(
-            $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php'
-        );
-        $indexFileBuilder->buildFile(
-            $destinationDirPrefix . $indexDirectory . DIRECTORY_SEPARATOR . 'index.php'
-        );
-
-        return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
+        return 0;
     }
 
     /**
