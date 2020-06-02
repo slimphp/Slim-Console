@@ -260,19 +260,9 @@ class Init extends AbstractInitProfile
     private function buildRoutesFile(string $templatePath, string $destinationFile, Dependency $psr7): int
     {
         $PSR7ImportsReplace = null;
-        $bodyReplace = <<<'BODY'
-
-    $app->options('/{routes:.*}', function (Request $request, Response $response) {
-        // CORS Pre-Flight OPTIONS Request Handler
-        return $response;
-    });
-
-    $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write('Hello world!');
-        return $response;
-    });
-
-BODY;
+        $bodyReplace = file_get_contents(
+            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' . DIRECTORY_SEPARATOR . 'routes_body.template'
+        );
 
         switch (get_class($psr7)) {
             case SlimPsr7Dependency::class:
@@ -294,7 +284,7 @@ BODY;
 
         (new FileBuilder($templatePath))
             ->setReplaceToken('{argument}', 'App $app')
-            ->setReplaceToken('{body}', $bodyReplace)
+            ->setReplaceToken('{body}', (string)$bodyReplace)
             ->setReplaceToken('{imports}', $PSR7ImportsReplace)
             ->buildFile($destinationFile);
 
@@ -326,38 +316,18 @@ BODY;
             case PHPDIDependency::class:
                 $importsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Logger;\n";
                 $argumentReplace = 'ContainerBuilder $containerBuilder';
-                $bodyReplace = <<<'BODY'
-
-    // Global Settings Object
-    $containerBuilder->addDefinitions([
-        'settings' => [
-            'displayErrorDetails' => true, // Should be set to false in production
-            'logger' => [
-                'name' => '{appName}',
-                'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
-                'level' => Logger::DEBUG,
-            ],
-        ],
-    ]);
-
-BODY;
+                $bodyReplace = file_get_contents(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                    DIRECTORY_SEPARATOR . 'settings_body_php_di.template'
+                );
                 break;
             case PimpleDependency::class:
                 $importsReplace = "\nuse Monolog\Logger;\nuse Pimple\Container;\n";
                 $argumentReplace = 'Container $container';
-                $bodyReplace = <<<'BODY'
-
-    // Global Settings Object
-    $container['settings'] = [
-        'displayErrorDetails' => true, // Should be set to false in production
-        'logger' => [
-            'name' => '{appName}',
-            'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
-            'level' => Logger::DEBUG,
-        ],
-    ];
-
-BODY;
+                $bodyReplace = file_get_contents(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                    DIRECTORY_SEPARATOR . 'settings_body_pimple.template'
+                );
                 break;
             case OtherDependency::class:
                 $importsReplace = '';
@@ -369,7 +339,7 @@ BODY;
         (new FileBuilder($templatePath))
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{argument}', $argumentReplace)
-            ->setReplaceToken('{body}', $bodyReplace)
+            ->setReplaceToken('{body}', (string)$bodyReplace)
             ->setReplaceToken('{appName}', $projectDirectory)
             ->buildFile($destinationFile);
 
@@ -400,49 +370,19 @@ BODY;
                     "use Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
                     "use Psr\Container\ContainerInterface;\nuse Psr\Log\LoggerInterface;\n";
                 $argumentReplace = 'ContainerBuilder $containerBuilder';
-                $bodyReplace = <<<'BODY'
-
-    $containerBuilder->addDefinitions([
-        LoggerInterface::class => function (ContainerInterface $c) {
-            $settings = $c->get('settings');
-
-            $loggerSettings = $settings['logger'];
-            $logger = new Logger($loggerSettings['name']);
-                        
-            $processor = new UidProcessor();
-            $logger->pushProcessor($processor);
-                        
-            $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
-            $logger->pushHandler($handler);
-                        
-            return $logger;
-        },
-    ]);
-
-BODY;
+                $bodyReplace = file_get_contents(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                    DIRECTORY_SEPARATOR . 'dependencies_body_php_di.template'
+                );
                 break;
             case PimpleDependency::class:
                 $importsReplace = "\nuse Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
                     "\nuse Monolog\Processor\UidProcessor;\nuse Pimple\Container;\nuse Psr\Log\LoggerInterface;\n";
                 $argumentReplace = 'Container $container';
-                $bodyReplace = <<<'BODY'
-
-    $container[LoggerInterface::class] = function ($c) {
-        $settings = $c['settings'];
-        
-        $loggerSettings = $settings['logger'];
-        $logger = new Logger($loggerSettings['name']);
-                        
-        $processor = new UidProcessor();
-        $logger->pushProcessor($processor);
-                        
-        $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
-        $logger->pushHandler($handler);
-                        
-        return $logger;
-    };
-
-BODY;
+                $bodyReplace = file_get_contents(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                    DIRECTORY_SEPARATOR . 'dependencies_body_pimple.template'
+                );
                 break;
             case OtherDependency::class:
                 $importsReplace = '';
@@ -454,7 +394,7 @@ BODY;
         (new FileBuilder($templatePath))
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{argument}', $argumentReplace)
-            ->setReplaceToken('{body}', $bodyReplace)
+            ->setReplaceToken('{body}', (string)$bodyReplace)
             ->buildFile($destinationFile);
 
         return 0;
@@ -483,46 +423,28 @@ BODY;
             case PHPDIDependency::class:
                 $containerVariableReplace = '$containerBuilder';
                 $importsReplace = "use DI\ContainerBuilder;\nuse Slim\Factory\AppFactory;";
-                $defineContainerReplace = <<<'BODY'
-// Instantiate PHP-DI ContainerBuilder
-$containerBuilder = new ContainerBuilder();
-
-if (false) { // Should be set to true in production
-    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
-}
-BODY;
-                $setContainerReplace = <<<'BODY'
-// Build PHP-DI Container instance
-$container = $containerBuilder->build();
-
-// Instantiate the app
-AppFactory::setContainer($container);
-BODY;
+                $defineContainerReplace = "// Instantiate PHP-DI ContainerBuilder\n" .
+                    "\$containerBuilder = new ContainerBuilder();\n\n" .
+                    "if (false) { // Should be set to true in production\n" .
+                    "    \$containerBuilder->enableCompilation(__DIR__ . '/../var/cache');\n}";
+                $setContainerReplace = "// Build PHP-DI Container instance\n" .
+                    "\$container = \$containerBuilder->build();\n\n// Instantiate the app\n" .
+                    "AppFactory::setContainer(\$container);";
                 break;
             case PimpleDependency::class:
                 $containerVariableReplace = '$container';
                 $importsReplace = "use Pimple\Container;\nuse Slim\Factory\AppFactory;";
-                $defineContainerReplace = <<<'BODY'
-// Instantiate Pimple Container
-$container = new Container();
-BODY;
-                $setContainerReplace = <<<'BODY'
-// Instantiate the app
-AppFactory::setContainer(new \Pimple\Psr11\Container($container));
-BODY;
+                $defineContainerReplace = "// Instantiate Pimple Container\n\$container = new Container();";
+                $setContainerReplace = "// Instantiate the app\n" .
+                    "AppFactory::setContainer(new \Pimple\Psr11\Container(\$container));";
                 break;
             case OtherDependency::class:
                 $containerVariableReplace = '$container';
                 $importsReplace = "use Slim\Factory\AppFactory;";
-                $defineContainerReplace = <<<'BODY'
-// TODO: Instantiate you'r Dependency Container
-$container = null;
-BODY;
-                $setContainerReplace = <<<'BODY'
-// Instantiate the app
-// TODO: Uncomment the line below if you created an instance of Dependency Container
-//AppFactory::setContainer($container);
-BODY;
+                $defineContainerReplace = "// TODO: Instantiate you'r Dependency Container\n\$container = null;";
+                $setContainerReplace = "// Instantiate the app\n" .
+                    "// TODO: Uncomment the line below if you created an instance of Dependency Container\n" .
+                    "//AppFactory::setContainer(\$container);";
                 break;
         }
 

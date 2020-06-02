@@ -1,0 +1,15 @@
+
+    $container[LoggerInterface::class] = function ($c) {
+        $settings = $c['settings'];
+
+        $loggerSettings = $settings['logger'];
+        $logger = new Logger($loggerSettings['name']);
+
+        $processor = new UidProcessor();
+        $logger->pushProcessor($processor);
+
+        $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
+        $logger->pushHandler($handler);
+
+        return $logger;
+    };
