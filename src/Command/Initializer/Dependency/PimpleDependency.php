@@ -24,6 +24,6 @@ class PimpleDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'pimple/pimple' => Versions::PIMPIE,
+        'pimple/pimple' => Versions::PIMPLE,
     ];
 }

@@ -24,7 +24,7 @@ class GuzzleDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'guzzlehttp/psr7'                  => Versions::GIZZLE_PSR_7,
+        'guzzlehttp/psr7'                  => Versions::GUZZLE_PSR_7,
         'http-interop/http-factory-guzzle' => Versions::HTTP_FACTORY_GUZZLE,
     ];
 }
