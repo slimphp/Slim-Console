@@ -50,12 +50,12 @@ class Init extends AbstractInitProfile
     /**
      * @var bool
      */
-    private $useDefaultSetup;
+    protected $useDefaultSetup;
 
     /**
      * @var string
      */
-    private $templatesDirectory;
+    protected $templatesDirectory;
 
     /**
      * {@inheritDoc}
@@ -257,7 +257,7 @@ class Init extends AbstractInitProfile
      *
      * @return int The Exit Code.
      */
-    private function buildRoutesFile(string $templatePath, string $destinationFile, Dependency $psr7): int
+    protected function buildRoutesFile(string $templatePath, string $destinationFile, Dependency $psr7): int
     {
         $PSR7ImportsReplace = null;
         $bodyReplace = file_get_contents(
@@ -301,7 +301,7 @@ class Init extends AbstractInitProfile
      *
      * @return int The Exit Code.
      */
-    private function buildSettingsFile(
+    protected function buildSettingsFile(
         string $templatePath,
         string $destinationFile,
         Dependency $dependencyContainer,
@@ -355,7 +355,7 @@ class Init extends AbstractInitProfile
      *
      * @return int The Exit Code.
      */
-    private function buildDependenciesFile(
+    protected function buildDependenciesFile(
         string $templatePath,
         string $destinationFile,
         Dependency $dependencyContainer
@@ -409,7 +409,7 @@ class Init extends AbstractInitProfile
      *
      * @return int The Exit Code.
      */
-    private function buildIndexFile(
+    protected function buildIndexFile(
         string $templatePath,
         string $destinationFile,
         Dependency $dependencyContainer
