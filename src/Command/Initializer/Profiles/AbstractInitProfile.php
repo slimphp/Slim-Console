@@ -89,7 +89,9 @@ abstract class AbstractInitProfile implements InitProfileInterface
         }
 
         if (!is_dir($directoryFullPath)) {
-            mkdir($directoryFullPath, 0755);
+            if (!mkdir($directoryFullPath, 0755)) {
+                return -1;
+            }
         }
 
         $this->io->title('Initialize a new Slim Project');

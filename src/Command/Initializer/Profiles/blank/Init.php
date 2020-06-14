@@ -120,38 +120,67 @@ class Init extends AbstractInitProfile
 
         foreach ($directoriesToCreate as $directory) {
             if (!is_dir($directoryFullPath . DIRECTORY_SEPARATOR . $directory)) {
-                mkdir($directoryFullPath . DIRECTORY_SEPARATOR . $directory, 0755, true);
+                if (!mkdir($directoryFullPath . DIRECTORY_SEPARATOR . $directory, 0755, true)) {
+                    return -1;
+                }
             }
         }
 
         foreach ($filesToCreate as $file) {
             if (!is_file($directoryFullPath . DIRECTORY_SEPARATOR . $file)) {
-                touch($directoryFullPath . DIRECTORY_SEPARATOR . $file);
+                if (!touch($directoryFullPath . DIRECTORY_SEPARATOR . $file)) {
+                    return -1;
+                }
             }
         }
 
         if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
-            copy(
-                $this->templatesDirectory . DIRECTORY_SEPARATOR . 'docker-compose.yml.template',
-                $directoryFullPath . DIRECTORY_SEPARATOR . 'docker-compose.yml'
-            );
+            if (
+                !copy(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'docker-compose.yml.template',
+                    $directoryFullPath . DIRECTORY_SEPARATOR . 'docker-compose.yml'
+                )
+            ) {
+                return -1;
+            }
         }
 
-        copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . '.gitignore.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . '.gitignore'
-        );
-        copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . '.htaccess.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . $directoriesToCreate['index'] . DIRECTORY_SEPARATOR . '.htaccess'
-        );
+        if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
+            if (
+                !copy(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . '.gitignore.template',
+                    $directoryFullPath . DIRECTORY_SEPARATOR . '.gitignore'
+                )
+            ) {
+                return -1;
+            }
+        }
+        if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
+            if (
+                !copy(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR .
+                        '.htaccess.template',
+                    $directoryFullPath . DIRECTORY_SEPARATOR . $directoriesToCreate['index'] .
+                        DIRECTORY_SEPARATOR . '.htaccess'
+                )
+            ) {
+                return -1;
+            }
+        }
 
         // Setup PHPUnit.
 
-        copy(
-            $this->templatesDirectory . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'bootstrap.php.template',
-            $directoryFullPath . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'bootstrap.php'
-        );
+        if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
+            if (
+                !copy(
+                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR .
+                        'bootstrap.php.template',
+                    $directoryFullPath . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'bootstrap.php'
+                )
+            ) {
+                return -1;
+            }
+        }
 
         $phpunitTemplate = file_get_contents($this->templatesDirectory . DIRECTORY_SEPARATOR . 'phpunit.xml.template');
         $phpunitTemplate = str_replace(
@@ -163,7 +192,10 @@ class Init extends AbstractInitProfile
             ],
             $phpunitTemplate ? $phpunitTemplate : ''
         );
-        file_put_contents($directoryFullPath . DIRECTORY_SEPARATOR . 'phpunit.xml', $phpunitTemplate);
+
+        if (false === file_put_contents($directoryFullPath . DIRECTORY_SEPARATOR . 'phpunit.xml', $phpunitTemplate)) {
+            return -1;
+        }
 
         $composerJsonContent['require-dev']['phpunit/phpunit'] = Versions::PHP_UNIT;
         $composerJsonContent['scripts']['test'] = 'phpunit';
@@ -282,13 +314,11 @@ class Init extends AbstractInitProfile
                 break;
         }
 
-        (new FileBuilder($templatePath))
+        return (new FileBuilder($templatePath))
             ->setReplaceToken('{argument}', 'App $app')
             ->setReplaceToken('{body}', (string)$bodyReplace)
             ->setReplaceToken('{imports}', $PSR7ImportsReplace)
             ->buildFile($destinationFile);
-
-        return 0;
     }
 
     /**
@@ -336,14 +366,12 @@ class Init extends AbstractInitProfile
                 break;
         }
 
-        (new FileBuilder($templatePath))
+        return (new FileBuilder($templatePath))
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{argument}', $argumentReplace)
             ->setReplaceToken('{body}', (string)$bodyReplace)
             ->setReplaceToken('{appName}', $projectDirectory)
             ->buildFile($destinationFile);
-
-        return 0;
     }
 
     /**
@@ -391,13 +419,11 @@ class Init extends AbstractInitProfile
                 break;
         }
 
-        (new FileBuilder($templatePath))
+        return (new FileBuilder($templatePath))
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{argument}', $argumentReplace)
             ->setReplaceToken('{body}', (string)$bodyReplace)
             ->buildFile($destinationFile);
-
-        return 0;
     }
 
     /**
@@ -448,14 +474,12 @@ class Init extends AbstractInitProfile
                 break;
         }
 
-        (new FileBuilder($templatePath))
+        return (new FileBuilder($templatePath))
             ->setReplaceToken('{containerVariable}', $containerVariableReplace)
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{defineContainer}', $defineContainerReplace)
             ->setReplaceToken('{setContainer}', $setContainerReplace)
             ->buildFile($destinationFile);
-
-        return 0;
     }
 
     /**

@@ -64,14 +64,20 @@ class FileBuilder
      * Replace tokens in template and write it to destination file.
      *
      * @param string $destinationFile Destination file to write to.
+     *
+     * @return int The Exit Code.
      */
-    public function buildFile(string $destinationFile): void
+    public function buildFile(string $destinationFile): int
     {
         // Replace tokens.
         foreach ($this->replaceTokens as $token => $replace) {
             $this->template = str_replace($token, $replace ?? '', (string)$this->template);
         }
 
-        file_put_contents($destinationFile, $this->template);
+        if (file_put_contents($destinationFile, $this->template)) {
+            return 0;
+        }
+
+        return -1;
     }
 }
