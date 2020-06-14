@@ -27,6 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function array_keys;
 use function copy;
+use function exec;
 use function file_get_contents;
 use function file_put_contents;
 use function get_class;
@@ -35,6 +36,7 @@ use function is_dir;
 use function is_file;
 use function mkdir;
 use function str_replace;
+use function system;
 use function touch;
 
 use const DIRECTORY_SEPARATOR;
@@ -74,6 +76,8 @@ class Init extends AbstractInitProfile
     {
         $this->useDefaultSetup = $useDefaultSetup;
         $exitCode = null;
+        $phpBinary = null;
+        $composerBinary = null;
 
         if (0 !== ($exitCode = parent::run($projectDirectory, $useDefaultSetup))) {
             return $exitCode;
@@ -84,7 +88,18 @@ class Init extends AbstractInitProfile
         }
 
         if (0 === ($exitCode = $this->setupDependencies($projectDirectory))) {
-            $this->io->success('New Slim project successfully created. Please run `composer install`.');
+            if ($phpBinary = exec('which php') && $composerBinary = exec('which composer')) {
+                $this->io->newLine(2);
+                $this->io->text("Installing dependencies...");
+                $this->io->newLine(2);
+
+                system("cd {$projectDirectory} && {$phpBinary} {$composerBinary} install");
+
+                $this->io->newLine();
+                $this->io->success('New Slim project successfully created.');
+            } else {
+                $this->io->success('New Slim project successfully created. Please run `composer install`.');
+            }
         }
 
         return $exitCode;
