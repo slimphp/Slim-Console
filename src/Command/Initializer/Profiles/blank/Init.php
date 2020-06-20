@@ -82,7 +82,10 @@ class Init extends AbstractInitProfile
         }
 
         if (0 === ($exitCode = $this->setupDependencies($projectDirectory))) {
-            if ($phpBinary = exec('which php') && $composerBinary = exec('which composer')) {
+            if (
+                ($phpBinary = exec('which php'))
+                && ($composerBinary = exec('which composer'))
+            ) {
                 $this->io->newLine(2);
                 $this->io->text("Installing dependencies...");
                 $this->io->newLine(2);
@@ -115,7 +118,6 @@ class Init extends AbstractInitProfile
             'bootstrap' => $this->config ? $this->config->getBootstrapDir() : 'app',
             'index'     => $this->config ? $this->config->getIndexDir() : 'public',
             'source'    => $this->config ? $this->config->getSourceDir() : 'src',
-            'logs'      => 'logs',
             'tests'     => 'tests',
         ];
         $filesToCreate = [
@@ -235,8 +237,10 @@ class Init extends AbstractInitProfile
         ['psr7' => $psr7, 'dependencyContainer' => $dependencyContainer, 'logger' => $logger] = $dependencies;
 
         foreach ($dependencies as $dependency) {
-            foreach ($dependency->getPackages() as $package => $version) {
-                $composerJsonContent['require'][$package] = $version;
+            if ($dependency instanceof Dependency) {
+                foreach ($dependency->getPackages() as $package => $version) {
+                    $composerJsonContent['require'][$package] = $version;
+                }
             }
         }
 
@@ -255,6 +259,7 @@ class Init extends AbstractInitProfile
                 $returnFunctionSkeletonFile,
                 $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'settings.php',
                 $dependencyContainer,
+                $logger,
                 ['projectDirectory' => $projectDirectory]
             ))
         ) {
@@ -265,7 +270,8 @@ class Init extends AbstractInitProfile
             0 !== ($exitCode = $this->buildDependenciesFile(
                 $returnFunctionSkeletonFile,
                 $destinationDirPrefix . $bootstrapDirectory . DIRECTORY_SEPARATOR . 'dependencies.php',
-                $dependencyContainer
+                $dependencyContainer,
+                $logger
             ))
         ) {
             return $exitCode;
@@ -279,6 +285,12 @@ class Init extends AbstractInitProfile
             ))
         ) {
             return $exitCode;
+        }
+
+        if ($logger && !is_dir($directoryFullPath . DIRECTORY_SEPARATOR . 'logs')) {
+            if (!mkdir($directoryFullPath . DIRECTORY_SEPARATOR . 'logs', 0755, true)) {
+                return -1;
+            }
         }
 
         return $this->writeToComposerJson($directoryFullPath, $composerJsonContent);
@@ -328,10 +340,11 @@ class Init extends AbstractInitProfile
     /**
      * Build a settings file from the template.
      *
-     * @param string       $templatePath        Template file path.
-     * @param string       $destinationFile     Destination file to write to.
-     * @param Dependency   $dependencyContainer Dependency Container Dependency.
-     * @param array<mixed> $additional          Additional parameters.
+     * @param string          $templatePath        Template file path.
+     * @param string          $destinationFile     Destination file to write to.
+     * @param Dependency      $dependencyContainer Dependency Container Dependency.
+     * @param Dependency|null $logger              Logger Dependency.
+     * @param array<mixed>    $additional          Additional parameters.
      *
      * @return int The Exit Code.
      */
@@ -339,16 +352,31 @@ class Init extends AbstractInitProfile
         string $templatePath,
         string $destinationFile,
         Dependency $dependencyContainer,
+        ?Dependency $logger,
         array $additional = []
     ): int {
         $importsReplace = null;
         $argumentReplace = null;
         $bodyReplace = null;
+        $loggerSettingsReplace = null;
+        $loggerImportReplace = "\n";
         ['projectDirectory' => $projectDirectory] = $additional;
+
+        if ($logger instanceof Dependency) {
+            switch (get_class($logger)) {
+                case MonologDependency::class:
+                    $loggerSettingsReplace = file_get_contents(
+                        $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                        DIRECTORY_SEPARATOR . 'settings_logger_monolog.template'
+                    );
+                    $loggerImportReplace = "\nuse Monolog\Logger;\n";
+                    break;
+            }
+        }
 
         switch (get_class($dependencyContainer)) {
             case PHPDIDependency::class:
-                $importsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Logger;\n";
+                $importsReplace = "\nuse DI\ContainerBuilder;{$loggerImportReplace}";
                 $argumentReplace = 'ContainerBuilder $containerBuilder';
                 $bodyReplace = file_get_contents(
                     $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
@@ -356,7 +384,7 @@ class Init extends AbstractInitProfile
                 );
                 break;
             case PimpleDependency::class:
-                $importsReplace = "\nuse Monolog\Logger;\nuse Pimple\Container;\n";
+                $importsReplace = "{$loggerImportReplace}use Pimple\Container;\n";
                 $argumentReplace = 'Container $container';
                 $bodyReplace = file_get_contents(
                     $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
@@ -375,52 +403,57 @@ class Init extends AbstractInitProfile
             ->setReplaceToken('{argument}', $argumentReplace)
             ->setReplaceToken('{body}', (string)$bodyReplace)
             ->setReplaceToken('{appName}', $projectDirectory)
+            ->setReplaceToken('{logger_settings}', $loggerSettingsReplace)
             ->buildFile($destinationFile);
     }
 
     /**
      * Build a dependencies file from the template.
      *
-     * @param string     $templatePath        Template file path.
-     * @param string     $destinationFile     Destination file to write to.
-     * @param Dependency $dependencyContainer Dependency Container Dependency.
+     * @param string          $templatePath        Template file path.
+     * @param string          $destinationFile     Destination file to write to.
+     * @param Dependency      $dependencyContainer Dependency Container Dependency.
+     * @param Dependency|null $logger              Logger Dependency.
      *
      * @return int The Exit Code.
      */
     protected function buildDependenciesFile(
         string $templatePath,
         string $destinationFile,
-        Dependency $dependencyContainer
+        Dependency $dependencyContainer,
+        ?Dependency $logger
     ): int {
         $importsReplace = null;
+        $loggerImportsReplace = null;
         $argumentReplace = null;
-        $bodyReplace = null;
+        $bodyReplaceFile = $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' . DIRECTORY_SEPARATOR;
+        $bodyReplace = "\n";
 
         switch (get_class($dependencyContainer)) {
             case PHPDIDependency::class:
-                $importsReplace = "\nuse DI\ContainerBuilder;\nuse Monolog\Handler\StreamHandler;\n" .
-                    "use Monolog\Logger;\nuse Monolog\Processor\UidProcessor;\n" .
-                    "use Psr\Container\ContainerInterface;\nuse Psr\Log\LoggerInterface;\n";
+                $importsReplace = "\nuse DI\ContainerBuilder;\nuse Psr\Container\ContainerInterface;\n";
+                $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                    "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
                 $argumentReplace = 'ContainerBuilder $containerBuilder';
-                $bodyReplace = file_get_contents(
-                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
-                    DIRECTORY_SEPARATOR . 'dependencies_body_php_di.template'
-                );
+                $bodyReplaceFile .= 'dependencies_body_php_di.template';
                 break;
             case PimpleDependency::class:
-                $importsReplace = "\nuse Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
-                    "\nuse Monolog\Processor\UidProcessor;\nuse Pimple\Container;\nuse Psr\Log\LoggerInterface;\n";
+                $importsReplace = "\nuse Pimple\Container;\n";
+                $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                    "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
                 $argumentReplace = 'Container $container';
-                $bodyReplace = file_get_contents(
-                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
-                    DIRECTORY_SEPARATOR . 'dependencies_body_pimple.template'
-                );
+                $bodyReplaceFile .= 'dependencies_body_pimple.template';
                 break;
             case OtherDependency::class:
                 $importsReplace = '';
                 $argumentReplace = '$container';
-                $bodyReplace = "\n";
+                $bodyReplaceFile = null;
                 break;
+        }
+
+        if ($logger instanceof Dependency && $bodyReplaceFile) {
+            $bodyReplace = file_get_contents($bodyReplaceFile);
+            $importsReplace .= $loggerImportsReplace;
         }
 
         return (new FileBuilder($templatePath))
@@ -517,7 +550,7 @@ class Init extends AbstractInitProfile
         $dependencies = [
             'psr7' => $availableDependencies['psr7'][SlimPsr7Dependency::NAME],
             'dependencyContainer' => $availableDependencies['dependencyContainer'][PHPDIDependency::NAME],
-            'logger' => $availableDependencies['logger'][MonologDependency::NAME],
+            'logger' => null,
         ];
 
         if (!$this->useDefaultSetup) {
@@ -554,7 +587,7 @@ class Init extends AbstractInitProfile
                 $dependencies['dependencyContainer'] = $dependencyContainer;
             }
 
-            if ($this->io->confirm('Do you want to configure PSR-3 Logging?')) {
+            if ($this->io->confirm('Do you want to use PSR-3 Logger?')) {
                 $logger = $this->io->choice(
                     'Select PSR-3 Logger',
                     array_keys($availableDependencies['logger']),
