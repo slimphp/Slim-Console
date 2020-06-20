@@ -10,8 +10,6 @@ declare(strict_types=1);
 
 namespace Slim\Console\Command\Initializer\Profiles;
 
-use Exception;
-
 /**
  * Defines version constants.
  *
@@ -20,16 +18,6 @@ use Exception;
  */
 class DependencyVersions
 {
-    /**
-     * DependencyVersions constructor.
-     *
-     * @throws Exception
-     */
-    public function __construct()
-    {
-        throw new Exception('Class `' . __CLASS__ . '` is not instanceable.');
-    }
-
     public const EXT_JSON = '*';
     public const PHP = '^7.2';
     public const SLIM = '^4.5';
