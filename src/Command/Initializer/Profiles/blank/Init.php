@@ -287,7 +287,7 @@ class Init extends AbstractInitProfile
             return $exitCode;
         }
 
-        if ($logger && !is_dir($directoryFullPath . DIRECTORY_SEPARATOR . 'logs')) {
+        if ($logger instanceof Dependency && !is_dir($directoryFullPath . DIRECTORY_SEPARATOR . 'logs')) {
             if (!mkdir($directoryFullPath . DIRECTORY_SEPARATOR . 'logs', 0755, true)) {
                 return -1;
             }
@@ -299,35 +299,38 @@ class Init extends AbstractInitProfile
     /**
      * Build a routes file from the template.
      *
-     * @param string     $templatePath    Template file path.
-     * @param string     $destinationFile Destination file to write to.
-     * @param Dependency $psr7            PSR-7 Implementation Dependency.
+     * @param string          $templatePath    Template file path.
+     * @param string          $destinationFile Destination file to write to.
+     * @param Dependency|null $psr7            PSR-7 Implementation Dependency.
      *
      * @return int The Exit Code.
      */
-    protected function buildRoutesFile(string $templatePath, string $destinationFile, Dependency $psr7): int
+    protected function buildRoutesFile(string $templatePath, string $destinationFile, ?Dependency $psr7): int
     {
         $PSR7ImportsReplace = null;
         $bodyReplace = file_get_contents(
             $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' . DIRECTORY_SEPARATOR . 'routes_body.template'
         );
 
-        switch (get_class($psr7)) {
-            case SlimPsr7Dependency::class:
-                $PSR7ImportsReplace = "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
-                    "use Psr\Http\Message\ServerRequestInterface as Request;\nuse Slim\App;\n";
-                break;
-            case LaminasDependency::class:
-                $PSR7ImportsReplace = "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
-                    "use Laminas\Diactoros\Response;\nuse Slim\App;\n";
-                break;
-            case GuzzleDependency::class:
-                $PSR7ImportsReplace = "\nuse GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;\nuse Slim\App;\n";
-                break;
-            case NyholmDependency::class:
-                $PSR7ImportsReplace = "\nuse Nyholm\Psr7\Response;\nuse Nyholm\Psr7\ServerRequest as Request;\n" .
-                    "use Slim\App;\n";
-                break;
+        if ($psr7 instanceof Dependency) {
+            switch (get_class($psr7)) {
+                case SlimPsr7Dependency::class:
+                    $PSR7ImportsReplace = "\nuse Psr\Http\Message\ResponseInterface as Response;\n" .
+                        "use Psr\Http\Message\ServerRequestInterface as Request;\nuse Slim\App;\n";
+                    break;
+                case LaminasDependency::class:
+                    $PSR7ImportsReplace = "\nuse Laminas\Diactoros\ServerRequest as Request;\n" .
+                        "use Laminas\Diactoros\Response;\nuse Slim\App;\n";
+                    break;
+                case GuzzleDependency::class:
+                    $PSR7ImportsReplace = "\nuse GuzzleHttp\Psr7\Request;\nuse GuzzleHttp\Psr7\Response;" .
+                        "\nuse Slim\App;\n";
+                    break;
+                case NyholmDependency::class:
+                    $PSR7ImportsReplace = "\nuse Nyholm\Psr7\Response;\nuse Nyholm\Psr7\ServerRequest as Request;\n" .
+                        "use Slim\App;\n";
+                    break;
+            }
         }
 
         return (new FileBuilder($templatePath))
@@ -342,7 +345,7 @@ class Init extends AbstractInitProfile
      *
      * @param string          $templatePath        Template file path.
      * @param string          $destinationFile     Destination file to write to.
-     * @param Dependency      $dependencyContainer Dependency Container Dependency.
+     * @param Dependency|null $dependencyContainer Dependency Container Dependency.
      * @param Dependency|null $logger              Logger Dependency.
      * @param array<mixed>    $additional          Additional parameters.
      *
@@ -351,7 +354,7 @@ class Init extends AbstractInitProfile
     protected function buildSettingsFile(
         string $templatePath,
         string $destinationFile,
-        Dependency $dependencyContainer,
+        ?Dependency $dependencyContainer,
         ?Dependency $logger,
         array $additional = []
     ): int {
@@ -374,28 +377,30 @@ class Init extends AbstractInitProfile
             }
         }
 
-        switch (get_class($dependencyContainer)) {
-            case PHPDIDependency::class:
-                $importsReplace = "\nuse DI\ContainerBuilder;{$loggerImportReplace}";
-                $argumentReplace = 'ContainerBuilder $containerBuilder';
-                $bodyReplace = file_get_contents(
-                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
-                    DIRECTORY_SEPARATOR . 'settings_body_php_di.template'
-                );
-                break;
-            case PimpleDependency::class:
-                $importsReplace = "{$loggerImportReplace}use Pimple\Container;\n";
-                $argumentReplace = 'Container $container';
-                $bodyReplace = file_get_contents(
-                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
-                    DIRECTORY_SEPARATOR . 'settings_body_pimple.template'
-                );
-                break;
-            case OtherDependency::class:
-                $importsReplace = '';
-                $argumentReplace = '$container';
-                $bodyReplace = "\n";
-                break;
+        if ($dependencyContainer instanceof Dependency) {
+            switch (get_class($dependencyContainer)) {
+                case PHPDIDependency::class:
+                    $importsReplace = "\nuse DI\ContainerBuilder;{$loggerImportReplace}";
+                    $argumentReplace = 'ContainerBuilder $containerBuilder';
+                    $bodyReplace = file_get_contents(
+                        $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                        DIRECTORY_SEPARATOR . 'settings_body_php_di.template'
+                    );
+                    break;
+                case PimpleDependency::class:
+                    $importsReplace = "{$loggerImportReplace}use Pimple\Container;\n";
+                    $argumentReplace = 'Container $container';
+                    $bodyReplace = file_get_contents(
+                        $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                        DIRECTORY_SEPARATOR . 'settings_body_pimple.template'
+                    );
+                    break;
+                case OtherDependency::class:
+                    $importsReplace = '';
+                    $argumentReplace = '$container';
+                    $bodyReplace = "\n";
+                    break;
+            }
         }
 
         return (new FileBuilder($templatePath))
@@ -403,7 +408,7 @@ class Init extends AbstractInitProfile
             ->setReplaceToken('{argument}', $argumentReplace)
             ->setReplaceToken('{body}', (string)$bodyReplace)
             ->setReplaceToken('{appName}', $projectDirectory)
-            ->setReplaceToken('{logger_settings}', $loggerSettingsReplace)
+            ->setReplaceToken('{logger_settings}', (string)$loggerSettingsReplace)
             ->buildFile($destinationFile);
     }
 
@@ -412,7 +417,7 @@ class Init extends AbstractInitProfile
      *
      * @param string          $templatePath        Template file path.
      * @param string          $destinationFile     Destination file to write to.
-     * @param Dependency      $dependencyContainer Dependency Container Dependency.
+     * @param Dependency|null $dependencyContainer Dependency Container Dependency.
      * @param Dependency|null $logger              Logger Dependency.
      *
      * @return int The Exit Code.
@@ -420,7 +425,7 @@ class Init extends AbstractInitProfile
     protected function buildDependenciesFile(
         string $templatePath,
         string $destinationFile,
-        Dependency $dependencyContainer,
+        ?Dependency $dependencyContainer,
         ?Dependency $logger
     ): int {
         $importsReplace = null;
@@ -429,26 +434,28 @@ class Init extends AbstractInitProfile
         $bodyReplaceFile = $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' . DIRECTORY_SEPARATOR;
         $bodyReplace = "\n";
 
-        switch (get_class($dependencyContainer)) {
-            case PHPDIDependency::class:
-                $importsReplace = "\nuse DI\ContainerBuilder;\nuse Psr\Container\ContainerInterface;\n";
-                $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
-                    "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
-                $argumentReplace = 'ContainerBuilder $containerBuilder';
-                $bodyReplaceFile .= 'dependencies_body_php_di.template';
-                break;
-            case PimpleDependency::class:
-                $importsReplace = "\nuse Pimple\Container;\n";
-                $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
-                    "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
-                $argumentReplace = 'Container $container';
-                $bodyReplaceFile .= 'dependencies_body_pimple.template';
-                break;
-            case OtherDependency::class:
-                $importsReplace = '';
-                $argumentReplace = '$container';
-                $bodyReplaceFile = null;
-                break;
+        if ($dependencyContainer instanceof Dependency) {
+            switch (get_class($dependencyContainer)) {
+                case PHPDIDependency::class:
+                    $importsReplace = "\nuse DI\ContainerBuilder;\nuse Psr\Container\ContainerInterface;\n";
+                    $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                        "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
+                    $argumentReplace = 'ContainerBuilder $containerBuilder';
+                    $bodyReplaceFile .= 'dependencies_body_php_di.template';
+                    break;
+                case PimpleDependency::class:
+                    $importsReplace = "\nuse Pimple\Container;\n";
+                    $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                        "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
+                    $argumentReplace = 'Container $container';
+                    $bodyReplaceFile .= 'dependencies_body_pimple.template';
+                    break;
+                case OtherDependency::class:
+                    $importsReplace = '';
+                    $argumentReplace = '$container';
+                    $bodyReplaceFile = null;
+                    break;
+            }
         }
 
         if ($logger instanceof Dependency && $bodyReplaceFile) {
@@ -466,49 +473,51 @@ class Init extends AbstractInitProfile
     /**
      * Build a index file from the template.
      *
-     * @param string     $templatePath        Template file path.
-     * @param string     $destinationFile     Destination file to write to.
-     * @param Dependency $dependencyContainer Dependency Container Dependency.
+     * @param string          $templatePath        Template file path.
+     * @param string          $destinationFile     Destination file to write to.
+     * @param Dependency|null $dependencyContainer Dependency Container Dependency.
      *
      * @return int The Exit Code.
      */
     protected function buildIndexFile(
         string $templatePath,
         string $destinationFile,
-        Dependency $dependencyContainer
+        ?Dependency $dependencyContainer
     ): int {
         $containerVariableReplace = null;
         $importsReplace = null;
         $defineContainerReplace = null;
         $setContainerReplace = null;
 
-        switch (get_class($dependencyContainer)) {
-            case PHPDIDependency::class:
-                $containerVariableReplace = '$containerBuilder';
-                $importsReplace = "use DI\ContainerBuilder;\nuse Slim\Factory\AppFactory;";
-                $defineContainerReplace = "// Instantiate PHP-DI ContainerBuilder\n" .
-                    "\$containerBuilder = new ContainerBuilder();\n\n" .
-                    "if (false) { // Should be set to true in production\n" .
-                    "    \$containerBuilder->enableCompilation(__DIR__ . '/../var/cache');\n}";
-                $setContainerReplace = "// Build PHP-DI Container instance\n" .
-                    "\$container = \$containerBuilder->build();\n\n// Instantiate the app\n" .
-                    "AppFactory::setContainer(\$container);";
-                break;
-            case PimpleDependency::class:
-                $containerVariableReplace = '$container';
-                $importsReplace = "use Pimple\Container;\nuse Slim\Factory\AppFactory;";
-                $defineContainerReplace = "// Instantiate Pimple Container\n\$container = new Container();";
-                $setContainerReplace = "// Instantiate the app\n" .
-                    "AppFactory::setContainer(new \Pimple\Psr11\Container(\$container));";
-                break;
-            case OtherDependency::class:
-                $containerVariableReplace = '$container';
-                $importsReplace = "use Slim\Factory\AppFactory;";
-                $defineContainerReplace = "// TODO: Instantiate you'r Dependency Container\n\$container = null;";
-                $setContainerReplace = "// Instantiate the app\n" .
-                    "// TODO: Uncomment the line below if you created an instance of Dependency Container\n" .
-                    "//AppFactory::setContainer(\$container);";
-                break;
+        if ($dependencyContainer instanceof Dependency) {
+            switch (get_class($dependencyContainer)) {
+                case PHPDIDependency::class:
+                    $containerVariableReplace = '$containerBuilder';
+                    $importsReplace = "use DI\ContainerBuilder;\nuse Slim\Factory\AppFactory;";
+                    $defineContainerReplace = "// Instantiate PHP-DI ContainerBuilder\n" .
+                        "\$containerBuilder = new ContainerBuilder();\n\n" .
+                        "if (false) { // Should be set to true in production\n" .
+                        "    \$containerBuilder->enableCompilation(__DIR__ . '/../var/cache');\n}";
+                    $setContainerReplace = "// Build PHP-DI Container instance\n" .
+                        "\$container = \$containerBuilder->build();\n\n// Instantiate the app\n" .
+                        "AppFactory::setContainer(\$container);";
+                    break;
+                case PimpleDependency::class:
+                    $containerVariableReplace = '$container';
+                    $importsReplace = "use Pimple\Container;\nuse Slim\Factory\AppFactory;";
+                    $defineContainerReplace = "// Instantiate Pimple Container\n\$container = new Container();";
+                    $setContainerReplace = "// Instantiate the app\n" .
+                        "AppFactory::setContainer(new \Pimple\Psr11\Container(\$container));";
+                    break;
+                case OtherDependency::class:
+                    $containerVariableReplace = '$container';
+                    $importsReplace = "use Slim\Factory\AppFactory;";
+                    $defineContainerReplace = "// TODO: Instantiate you'r Dependency Container\n\$container = null;";
+                    $setContainerReplace = "// Instantiate the app\n" .
+                        "// TODO: Uncomment the line below if you created an instance of Dependency Container\n" .
+                        "//AppFactory::setContainer(\$container);";
+                    break;
+            }
         }
 
         return (new FileBuilder($templatePath))
@@ -522,7 +531,7 @@ class Init extends AbstractInitProfile
     /**
      * Collect dependencies from user input.
      *
-     * @return array<Dependency>
+     * @return array<Dependency|null>
      */
     protected function askDependencies(): array
     {
