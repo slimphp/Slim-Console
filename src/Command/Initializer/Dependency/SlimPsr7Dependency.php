@@ -8,7 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-use Slim\Console\Command\Initializer\Profiles\blank\Versions;
+use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
 /**
  * Slim PSR-7 Dependency.
@@ -24,6 +24,6 @@ class SlimPsr7Dependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'slim/psr7' => Versions::SLIM_PSR_7,
+        'slim/psr7' => DependencyVersions::SLIM_PSR_7,
     ];
 }

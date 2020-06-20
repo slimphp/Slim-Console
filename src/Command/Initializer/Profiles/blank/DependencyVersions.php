@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Slim\Console\Command\Initializer\Profiles\blank;
 
-use Slim\Console\Command\Initializer\Profiles\Versions as ParentVersions;
+use Slim\Console\Command\Initializer\Profiles\DependencyVersions as ParentVersions;
 
 /**
  * Defines version constants.
@@ -18,7 +18,7 @@ use Slim\Console\Command\Initializer\Profiles\Versions as ParentVersions;
  * @package Slim\Console\Command\Initializer\Profiles\blank
  * @author Temuri Takalandze <me@abgeo.dev>
  */
-class Versions extends ParentVersions
+class DependencyVersions extends ParentVersions
 {
     public const GUZZLE_PSR_7 = '^1.6';
     public const HTTP_FACTORY_GUZZLE = '^1.0';

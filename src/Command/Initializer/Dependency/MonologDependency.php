@@ -8,7 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-use Slim\Console\Command\Initializer\Profiles\blank\Versions;
+use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
 /**
  * Monolog PSR-3 Logging Dependency.
@@ -24,6 +24,6 @@ class MonologDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'monolog/monolog' => Versions::MONOLOG,
+        'monolog/monolog' => DependencyVersions::MONOLOG,
     ];
 }

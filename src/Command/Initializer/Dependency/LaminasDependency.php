@@ -8,7 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-use Slim\Console\Command\Initializer\Profiles\blank\Versions;
+use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
 /**
  * Laminas Diactoros PSR-7 Dependency.
@@ -24,6 +24,6 @@ class LaminasDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'laminas/laminas-diactoros' => Versions::LAMINAS,
+        'laminas/laminas-diactoros' => DependencyVersions::LAMINAS,
     ];
 }

@@ -8,7 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-use Slim\Console\Command\Initializer\Profiles\blank\Versions;
+use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
 /**
  * PHP DI Dependency Container Dependency.
@@ -24,6 +24,6 @@ class PHPDIDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'php-di/php-di' => Versions::PHP_DI,
+        'php-di/php-di' => DependencyVersions::PHP_DI,
     ];
 }

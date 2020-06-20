@@ -18,10 +18,10 @@ use Exception;
  * @package Slim\Console\Command\Initializer\Profiles
  * @author Temuri Takalandze <me@abgeo.dev>
  */
-class Versions
+class DependencyVersions
 {
     /**
-     * Versions constructor.
+     * DependencyVersions constructor.
      *
      * @throws Exception
      */

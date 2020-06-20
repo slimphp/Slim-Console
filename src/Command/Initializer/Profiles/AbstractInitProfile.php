@@ -127,9 +127,9 @@ abstract class AbstractInitProfile implements InitProfileInterface
                 'description' => '',
                 'license' => '',
                 'require' => [
-                    'ext-json'  => Versions::EXT_JSON,
-                    'php'       => Versions::PHP,
-                    'slim/slim' => Versions::SLIM,
+                    'ext-json'  => DependencyVersions::EXT_JSON,
+                    'php'       => DependencyVersions::PHP,
+                    'slim/slim' => DependencyVersions::SLIM,
                 ],
                 'require-dev' => [],
                 'autoload' => [

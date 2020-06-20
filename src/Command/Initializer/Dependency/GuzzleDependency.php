@@ -8,7 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-use Slim\Console\Command\Initializer\Profiles\blank\Versions;
+use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
 /**
  * Guzzle PSR-7 Dependency.
@@ -24,7 +24,7 @@ class GuzzleDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'guzzlehttp/psr7'                  => Versions::GUZZLE_PSR_7,
-        'http-interop/http-factory-guzzle' => Versions::HTTP_FACTORY_GUZZLE,
+        'guzzlehttp/psr7'                  => DependencyVersions::GUZZLE_PSR_7,
+        'http-interop/http-factory-guzzle' => DependencyVersions::HTTP_FACTORY_GUZZLE,
     ];
 }
