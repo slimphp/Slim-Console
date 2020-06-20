@@ -10,12 +10,6 @@ namespace Slim\Console\Command\Initializer\Dependency;
 
 use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
-/**
- * Slim PSR-7 Dependency.
- *
- * @package Slim\Console\Command\Initializer\Dependency
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class SlimPsr7Dependency extends Dependency
 {
     public const NAME = 'Slim PSR-7';

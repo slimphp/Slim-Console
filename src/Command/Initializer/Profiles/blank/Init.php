@@ -41,12 +41,6 @@ use function touch;
 
 use const DIRECTORY_SEPARATOR;
 
-/**
- * Init class implementation for profile Blank.
- *
- * @package Slim\Console\Command\Initializer\Profiles\blank
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class Init extends AbstractInitProfile
 {
     /**

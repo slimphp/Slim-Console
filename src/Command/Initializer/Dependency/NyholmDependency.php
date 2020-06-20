@@ -10,12 +10,6 @@ namespace Slim\Console\Command\Initializer\Dependency;
 
 use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
-/**
- * Nyholm PSR-7 Dependency.
- *
- * @package Slim\Console\Command\Initializer\Dependency
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class NyholmDependency extends Dependency
 {
     public const NAME = 'Nyholm';

@@ -27,12 +27,6 @@ use function is_string;
 use const DIRECTORY_SEPARATOR;
 use const GLOB_ONLYDIR;
 
-/**
- * Class InitCommand.
- *
- * @package Slim\Console\Command\Initializer
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class InitCommand extends AbstractCommand
 {
     protected const PROFILE_NAMESPACE_PREFIX = "Slim\Console\Command\Initializer\Profiles";

@@ -14,12 +14,6 @@ use Slim\Console\Config\Config;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Interface InitProfileInterface
- *
- * @package Slim\Console\Command\Initializer\Profiles
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 interface InitProfileInterface
 {
     /**

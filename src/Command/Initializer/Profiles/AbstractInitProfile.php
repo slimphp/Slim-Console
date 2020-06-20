@@ -34,12 +34,6 @@ use const DIRECTORY_SEPARATOR;
 use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_SLASHES;
 
-/**
- * Class AbstractInitProfile.
- *
- * @package Slim\Console\Command\Initializer\Profiles
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 abstract class AbstractInitProfile implements InitProfileInterface
 {
     /**

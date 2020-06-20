@@ -10,12 +10,6 @@ declare(strict_types=1);
 
 namespace Slim\Console\Command\Initializer\Profiles;
 
-/**
- * Defines version constants.
- *
- * @package Slim\Console\Command\Initializer\Profiles
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class DependencyVersions
 {
     public const EXT_JSON = '*';

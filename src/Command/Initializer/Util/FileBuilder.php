@@ -13,12 +13,6 @@ use function file_put_contents;
 use function is_file;
 use function str_replace;
 
-/**
- * Build file from template.
- *
- * @package Slim\Console\Command\Initializer\Util
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class FileBuilder
 {
     /**

@@ -12,12 +12,6 @@ namespace Slim\Console\Command\Initializer\Profiles\blank;
 
 use Slim\Console\Command\Initializer\Profiles\DependencyVersions as ParentVersions;
 
-/**
- * Defines version constants.
- *
- * @package Slim\Console\Command\Initializer\Profiles\blank
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class DependencyVersions extends ParentVersions
 {
     public const GUZZLE_PSR_7 = '^1.6';

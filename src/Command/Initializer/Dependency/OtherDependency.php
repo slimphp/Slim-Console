@@ -8,12 +8,6 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-/**
- * Other/Empty Dependency.
- *
- * @package Slim\Console\Command\Initializer\Dependency
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 class OtherDependency extends Dependency
 {
     public const NAME = 'Other';

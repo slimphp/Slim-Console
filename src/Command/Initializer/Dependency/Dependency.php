@@ -8,12 +8,6 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-/**
- * Abstract Dependency class.
- *
- * @package Slim\Console\Command\Initializer\Dependency
- * @author Temuri Takalandze <me@abgeo.dev>
- */
 abstract class Dependency
 {
     public const NAME = 'Abstract Dependency';
