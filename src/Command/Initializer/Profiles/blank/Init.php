@@ -154,41 +154,36 @@ class Init extends AbstractInitProfile
             }
         }
 
-        if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
-            if (
-                !copy(
-                    $this->templatesDirectory . DIRECTORY_SEPARATOR . '.gitignore.template',
-                    $directoryFullPath . DIRECTORY_SEPARATOR . '.gitignore'
-                )
-            ) {
-                return -1;
-            }
+        if (
+            !copy(
+                $this->templatesDirectory . DIRECTORY_SEPARATOR . '.gitignore.template',
+                $directoryFullPath . DIRECTORY_SEPARATOR . '.gitignore'
+            )
+        ) {
+            return -1;
         }
-        if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
-            if (
-                !copy(
-                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR .
-                        '.htaccess.template',
-                    $directoryFullPath . DIRECTORY_SEPARATOR . $directoriesToCreate['index'] .
-                        DIRECTORY_SEPARATOR . '.htaccess'
-                )
-            ) {
-                return -1;
-            }
+
+        if (
+            !copy(
+                $this->templatesDirectory . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR .
+                '.htaccess.template',
+                $directoryFullPath . DIRECTORY_SEPARATOR . $directoriesToCreate['index'] .
+                DIRECTORY_SEPARATOR . '.htaccess'
+            )
+        ) {
+            return -1;
         }
 
         // Setup PHPUnit.
 
-        if ($this->useDefaultSetup ? true : $this->io->confirm('Do you want to create docker-compose.yml?', true)) {
-            if (
-                !copy(
-                    $this->templatesDirectory . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR .
-                        'bootstrap.php.template',
-                    $directoryFullPath . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'bootstrap.php'
-                )
-            ) {
-                return -1;
-            }
+        if (
+            !copy(
+                $this->templatesDirectory . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR .
+                'bootstrap.php.template',
+                $directoryFullPath . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'bootstrap.php'
+            )
+        ) {
+            return -1;
         }
 
         $phpunitTemplate = file_get_contents($this->templatesDirectory . DIRECTORY_SEPARATOR . 'phpunit.xml.template');
