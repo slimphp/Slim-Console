@@ -8,7 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-use Slim\Console\Command\Initializer\Profiles\blank\Versions;
+use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
 /**
  * Nyholm PSR-7 Dependency.
@@ -24,7 +24,7 @@ class NyholmDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'nyholm/psr7'        => Versions::NYHOLM_PSR_7,
-        'nyholm/psr7-server' => Versions::NYHOLM_PSR_7_SERVER,
+        'nyholm/psr7'        => DependencyVersions::NYHOLM_PSR_7,
+        'nyholm/psr7-server' => DependencyVersions::NYHOLM_PSR_7_SERVER,
     ];
 }

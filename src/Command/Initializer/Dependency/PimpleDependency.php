@@ -8,7 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Dependency;
 
-use Slim\Console\Command\Initializer\Profiles\blank\Versions;
+use Slim\Console\Command\Initializer\Profiles\blank\DependencyVersions;
 
 /**
  * PHP DI Dependency Container Dependency.
@@ -24,6 +24,6 @@ class PimpleDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'pimple/pimple' => Versions::PIMPLE,
+        'pimple/pimple' => DependencyVersions::PIMPLE,
     ];
 }
