@@ -138,8 +138,8 @@ abstract class AbstractInitProfile implements InitProfileInterface
             ],
             $data
         );
-        $require = (array)$data['require'];
-        $requireDev = (array)$data['require-dev'];
+        $require = (array) $data['require'];
+        $requireDev = (array) $data['require-dev'];
 
         ksort($require);
         ksort($requireDev);

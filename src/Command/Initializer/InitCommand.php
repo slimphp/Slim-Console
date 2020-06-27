@@ -44,18 +44,18 @@ class InitCommand extends AbstractCommand
             ->addArgument(
                 'directory',
                 InputArgument::REQUIRED,
-                'Directory of the project to create'
+                'Initialization directory'
             )
             ->addOption(
                 'profile',
                 'p',
                 InputOption::VALUE_REQUIRED,
-                'New Slim project skeleton profile',
+                'Skeleton profile name',
                 'blank'
             )
             ->addOption(
                 'default',
-                null,
+                'd',
                 InputOption::VALUE_NONE,
                 'Use default setup'
             );
@@ -71,7 +71,7 @@ class InitCommand extends AbstractCommand
         $directory = is_string($directory) ? $directory : 'new-slim-project';
         $profile = $input->getOption('profile');
         $profile = is_string($profile) ? $profile : 'blank';
-        $useDefaultSetup = (bool)$input->getOption('default');
+        $useDefaultSetup = (bool) $input->getOption('default');
 
         if (!in_array($profile, $this->getAvailableProfiles())) {
             throw new InvalidOptionException("Profile `{$profile}` not found!");

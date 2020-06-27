@@ -335,7 +335,7 @@ class Init extends AbstractInitProfile
 
         return (new FileBuilder($templatePath))
             ->setReplaceToken('{argument}', 'App $app')
-            ->setReplaceToken('{body}', (string)$bodyReplace)
+            ->setReplaceToken('{body}', (string) $bodyReplace)
             ->setReplaceToken('{imports}', $PSR7ImportsReplace)
             ->buildFile($destinationFile);
     }
@@ -406,9 +406,9 @@ class Init extends AbstractInitProfile
         return (new FileBuilder($templatePath))
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{argument}', $argumentReplace)
-            ->setReplaceToken('{body}', (string)$bodyReplace)
+            ->setReplaceToken('{body}', (string) $bodyReplace)
             ->setReplaceToken('{appName}', $projectDirectory)
-            ->setReplaceToken('{logger_settings}', (string)$loggerSettingsReplace)
+            ->setReplaceToken('{logger_settings}', (string) $loggerSettingsReplace)
             ->buildFile($destinationFile);
     }
 
@@ -466,7 +466,7 @@ class Init extends AbstractInitProfile
         return (new FileBuilder($templatePath))
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{argument}', $argumentReplace)
-            ->setReplaceToken('{body}', (string)$bodyReplace)
+            ->setReplaceToken('{body}', (string) $bodyReplace)
             ->buildFile($destinationFile);
     }
 

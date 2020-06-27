@@ -65,7 +65,7 @@ class FileBuilder
     {
         // Replace tokens.
         foreach ($this->replaceTokens as $token => $replace) {
-            $this->template = str_replace($token, $replace ?? '', (string)$this->template);
+            $this->template = str_replace($token, $replace ?? '', (string) $this->template);
         }
 
         if (file_put_contents($destinationFile, $this->template)) {
