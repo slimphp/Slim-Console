@@ -29,8 +29,8 @@ use const GLOB_ONLYDIR;
 
 class InitCommand extends AbstractCommand
 {
-    protected const PROFILE_NAMESPACE_PREFIX = "Slim\Console\Command\Initializer\Profiles";
-    protected const PROFILE_INIT_CLASS = "Init";
+    protected const PROFILE_NAMESPACE_PREFIX = 'Slim\Console\Command\Initializer\Profiles';
+    protected const PROFILE_INIT_CLASS = 'Init';
 
     protected static $defaultName = 'init';
 
