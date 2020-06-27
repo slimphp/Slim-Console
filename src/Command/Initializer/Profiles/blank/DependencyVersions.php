@@ -16,7 +16,7 @@ class DependencyVersions extends ParentVersions
 {
     public const GUZZLE_PSR_7 = '^1.6';
     public const HTTP_FACTORY_GUZZLE = '^1.0';
-    public const LAMINAS = '^2.3';
+    public const LAMINAS_DIACTOROS = '^2.3';
     public const MONOLOG = '^2.0';
     public const NYHOLM_PSR_7 = '^1.2';
     public const NYHOLM_PSR_7_SERVER = '^0.4';

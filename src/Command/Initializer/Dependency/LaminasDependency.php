@@ -18,6 +18,6 @@ class LaminasDependency extends Dependency
      * @var array<string>
      */
     protected $packages = [
-        'laminas/laminas-diactoros' => DependencyVersions::LAMINAS,
+        'laminas/laminas-diactoros' => DependencyVersions::LAMINAS_DIACTOROS,
     ];
 }
