@@ -543,9 +543,9 @@ class Init extends AbstractInitProfile
         $availableDependencies = [
             'psr7' => [
                 SlimPsr7Dependency::NAME => new SlimPsr7Dependency(),
-                LaminasDependency::NAME  => new LaminasDependency(),
-                GuzzleDependency::NAME   => new GuzzleDependency(),
                 NyholmDependency::NAME   => new NyholmDependency(),
+                GuzzleDependency::NAME   => new GuzzleDependency(),
+                LaminasDependency::NAME  => new LaminasDependency(),
             ],
             'dependencyContainer' => [
                 PHPDIDependency::NAME  => new PHPDIDependency(),
