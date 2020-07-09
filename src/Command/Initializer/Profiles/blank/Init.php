@@ -15,7 +15,6 @@ use Slim\Console\Command\Initializer\Dependency\GuzzleDependency;
 use Slim\Console\Command\Initializer\Dependency\LaminasDependency;
 use Slim\Console\Command\Initializer\Dependency\MonologDependency;
 use Slim\Console\Command\Initializer\Dependency\NyholmDependency;
-use Slim\Console\Command\Initializer\Dependency\OtherDependency;
 use Slim\Console\Command\Initializer\Dependency\PHPDIDependency;
 use Slim\Console\Command\Initializer\Dependency\PimpleDependency;
 use Slim\Console\Command\Initializer\Dependency\SlimPsr7Dependency;
@@ -395,11 +394,6 @@ class Init extends AbstractInitProfile
                         DIRECTORY_SEPARATOR . 'settings_body_pimple.template'
                     );
                     break;
-                case OtherDependency::class:
-                    $importsReplace = '';
-                    $argumentReplace = '$container';
-                    $bodyReplace = "\n";
-                    break;
             }
         }
 
@@ -407,8 +401,8 @@ class Init extends AbstractInitProfile
             ->setReplaceToken('{imports}', $importsReplace)
             ->setReplaceToken('{argument}', $argumentReplace)
             ->setReplaceToken('{body}', (string) $bodyReplace)
-            ->setReplaceToken('{appName}', $projectDirectory)
             ->setReplaceToken('{logger_settings}', (string) $loggerSettingsReplace)
+            ->setReplaceToken('{appName}', $projectDirectory)
             ->buildFile($destinationFile);
     }
 
@@ -449,11 +443,6 @@ class Init extends AbstractInitProfile
                         "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
                     $argumentReplace = 'Container $container';
                     $bodyReplaceFile .= 'dependencies_body_pimple.template';
-                    break;
-                case OtherDependency::class:
-                    $importsReplace = '';
-                    $argumentReplace = '$container';
-                    $bodyReplaceFile = null;
                     break;
             }
         }
@@ -509,14 +498,6 @@ class Init extends AbstractInitProfile
                     $setContainerReplace = "// Instantiate the app\n" .
                         "AppFactory::setContainer(new \Pimple\Psr11\Container(\$container));";
                     break;
-                case OtherDependency::class:
-                    $containerVariableReplace = '$container';
-                    $importsReplace = "use Slim\Factory\AppFactory;";
-                    $defineContainerReplace = "// TODO: Instantiate you'r Dependency Container\n\$container = null;";
-                    $setContainerReplace = "// Instantiate the app\n" .
-                        "// TODO: Uncomment the line below if you created an instance of Dependency Container\n" .
-                        "//AppFactory::setContainer(\$container);";
-                    break;
             }
         }
 
@@ -550,7 +531,6 @@ class Init extends AbstractInitProfile
             'dependencyContainer' => [
                 PHPDIDependency::NAME  => new PHPDIDependency(),
                 PimpleDependency::NAME => new PimpleDependency(),
-                OtherDependency::NAME  => new OtherDependency(),
             ],
             'logger' => [
                 MonologDependency::NAME => new MonologDependency(),
@@ -580,20 +560,8 @@ class Init extends AbstractInitProfile
                     PHPDIDependency::NAME
                 );
 
-                $dependencyContainer = $availableDependencies['dependencyContainer'][$dependencyContainer];
-                if ($dependencyContainer instanceof OtherDependency) {
-                    $dependencyContainerOtherPackage = $this->io->ask(
-                        'Enter Dependency Container package (<vendor>/<package>)'
-                    );
-                    $dependencyContainerOtherVersion = $this->io->ask('Enter Dependency Container version', '*');
-
-                    $dependencyContainer->addPackage(
-                        $dependencyContainerOtherPackage,
-                        $dependencyContainerOtherVersion
-                    );
-                }
-
-                $dependencies['dependencyContainer'] = $dependencyContainer;
+                $dependencies['dependencyContainer'] =
+                    $availableDependencies['dependencyContainer'][$dependencyContainer];
             }
 
             if ($this->io->confirm('Do you want to use PSR-3 Logger?')) {
