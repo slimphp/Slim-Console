@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Slim\Console\Command\Initializer\Profiles\blank;
 
+use Slim\Console\Command\Initializer\Dependency\AuraDIDependency;
 use Slim\Console\Command\Initializer\Dependency\Dependency;
 use Slim\Console\Command\Initializer\Dependency\GuzzleDependency;
 use Slim\Console\Command\Initializer\Dependency\LaminasDependency;
@@ -407,6 +408,18 @@ class Init extends AbstractInitProfile
                         $loggerSettingsReplace = str_replace("\n", "\n    ", $loggerSettingsReplace);
                     }
                     break;
+                case AuraDIDependency::class:
+                    $importsReplace = "\nuse Aura\Di\Container;{$loggerImportReplace}";
+                    $argumentReplace = 'Container $container';
+                    $bodyReplace = file_get_contents(
+                        $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                        DIRECTORY_SEPARATOR . 'settings_body_aura_di.template'
+                    );
+
+                    if (!empty($loggerSettingsReplace)) {
+                        $loggerSettingsReplace = str_replace("\n", "\n    ", $loggerSettingsReplace);
+                    }
+                    break;
             }
         }
 
@@ -463,6 +476,13 @@ class Init extends AbstractInitProfile
                         "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
                     $argumentReplace = 'Container $container';
                     $bodyReplaceFile .= 'dependencies_body_league.template';
+                    break;
+                case AuraDIDependency::class:
+                    $importsReplace = "\nuse Aura\Di\Container;\n";
+                    $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                        "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
+                    $argumentReplace = 'Container $container';
+                    $bodyReplaceFile .= 'dependencies_body_aura_di.template';
                     break;
             }
         }
@@ -525,6 +545,15 @@ class Init extends AbstractInitProfile
                     $setContainerReplace = "// Instantiate the app\n" .
                         "AppFactory::setContainer(\$container);";
                     break;
+                case AuraDIDependency::class:
+                    $containerVariableReplace = '$container';
+                    $importsReplace = "use Aura\Di\ContainerBuilder;\nuse Slim\Factory\AppFactory;";
+                    $defineContainerReplace = "// Instantiate Aura.Di ContainerBuilder\n" .
+                        "\$containerBuilder = new ContainerBuilder();\n\n" .
+                        "// Build Aura.Di Container instance\n\$container = \$containerBuilder->newInstance();";
+                    $setContainerReplace = "// Instantiate the app\n" .
+                        "AppFactory::setContainer(\$container);";
+                    break;
             }
         }
 
@@ -559,6 +588,7 @@ class Init extends AbstractInitProfile
                 PHPDIDependency::NAME           => new PHPDIDependency(),
                 PimpleDependency::NAME          => new PimpleDependency(),
                 LeagueContainerDependency::NAME => new LeagueContainerDependency(),
+                AuraDIDependency::NAME          => new AuraDIDependency(),
             ],
             'logger' => [
                 MonologDependency::NAME => new MonologDependency(),

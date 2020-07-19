@@ -14,6 +14,7 @@ use Slim\Console\Command\Initializer\Profiles\DependencyVersions as ParentVersio
 
 class DependencyVersions extends ParentVersions
 {
+    public const AURA_DI = '^4.1';
     public const GUZZLE_PSR_7 = '^1.6';
     public const HTTP_FACTORY_GUZZLE = '^1.0';
     public const LAMINAS_DIACTOROS = '^2.3';
