@@ -13,6 +13,7 @@ namespace Slim\Console\Command\Initializer\Profiles\blank;
 use Slim\Console\Command\Initializer\Dependency\Dependency;
 use Slim\Console\Command\Initializer\Dependency\GuzzleDependency;
 use Slim\Console\Command\Initializer\Dependency\LaminasDependency;
+use Slim\Console\Command\Initializer\Dependency\LeagueContainerDependency;
 use Slim\Console\Command\Initializer\Dependency\MonologDependency;
 use Slim\Console\Command\Initializer\Dependency\NyholmDependency;
 use Slim\Console\Command\Initializer\Dependency\PHPDIDependency;
@@ -394,6 +395,18 @@ class Init extends AbstractInitProfile
                         DIRECTORY_SEPARATOR . 'settings_body_pimple.template'
                     );
                     break;
+                case LeagueContainerDependency::class:
+                    $importsReplace = "{$loggerImportReplace}use League\Container\Container;\n";
+                    $argumentReplace = 'Container $container';
+                    $bodyReplace = file_get_contents(
+                        $this->templatesDirectory . DIRECTORY_SEPARATOR . 'parts' .
+                        DIRECTORY_SEPARATOR . 'settings_body_league.template'
+                    );
+
+                    if (!empty($loggerSettingsReplace)) {
+                        $loggerSettingsReplace = str_replace("\n", "\n    ", $loggerSettingsReplace);
+                    }
+                    break;
             }
         }
 
@@ -443,6 +456,13 @@ class Init extends AbstractInitProfile
                         "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
                     $argumentReplace = 'Container $container';
                     $bodyReplaceFile .= 'dependencies_body_pimple.template';
+                    break;
+                case LeagueContainerDependency::class:
+                    $importsReplace = "\nuse League\Container\Container;\n";
+                    $loggerImportsReplace = "use Monolog\Handler\StreamHandler;\nuse Monolog\Logger;" .
+                        "\nuse Monolog\Processor\UidProcessor;\nuse Psr\Log\LoggerInterface;\n";
+                    $argumentReplace = 'Container $container';
+                    $bodyReplaceFile .= 'dependencies_body_league.template';
                     break;
             }
         }
@@ -498,6 +518,13 @@ class Init extends AbstractInitProfile
                     $setContainerReplace = "// Instantiate the app\n" .
                         "AppFactory::setContainer(new \Pimple\Psr11\Container(\$container));";
                     break;
+                case LeagueContainerDependency::class:
+                    $containerVariableReplace = '$container';
+                    $importsReplace = "use League\Container\Container;\nuse Slim\Factory\AppFactory;";
+                    $defineContainerReplace = "// Instantiate League Container\n\$container = new Container();";
+                    $setContainerReplace = "// Instantiate the app\n" .
+                        "AppFactory::setContainer(\$container);";
+                    break;
             }
         }
 
@@ -529,8 +556,9 @@ class Init extends AbstractInitProfile
                 LaminasDependency::NAME  => new LaminasDependency(),
             ],
             'dependencyContainer' => [
-                PHPDIDependency::NAME  => new PHPDIDependency(),
-                PimpleDependency::NAME => new PimpleDependency(),
+                PHPDIDependency::NAME           => new PHPDIDependency(),
+                PimpleDependency::NAME          => new PimpleDependency(),
+                LeagueContainerDependency::NAME => new LeagueContainerDependency(),
             ],
             'logger' => [
                 MonologDependency::NAME => new MonologDependency(),
