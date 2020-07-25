@@ -10,9 +10,7 @@ declare(strict_types=1);
 
 namespace Slim\Console\Exception;
 
-use Exception;
-
-class CannotResolveConfigException extends Exception
+class CannotResolveConfigException extends ConfigException
 {
     /**
      * @var string
