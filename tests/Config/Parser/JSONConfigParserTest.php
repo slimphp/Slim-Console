@@ -10,9 +10,9 @@ declare(strict_types=1);
 
 namespace Slim\Tests\Console\Config\Parser;
 
-use InvalidArgumentException;
 use Slim\Console\Config\ConfigResolver;
 use Slim\Console\Config\Parser\JSONConfigParser;
+use Slim\Console\Exception\CannotParseConfigException;
 use Slim\Tests\Console\TestCase;
 
 use function file_get_contents;
@@ -53,13 +53,15 @@ class JSONConfigParserTest extends TestCase
      * @param string $fileName
      * @param string $expectedExceptionMessage
      */
-    public function testParseThrowsInvalidArgumentException(string $fileName, string $expectedExceptionMessage): void
-    {
+    public function testParseThrowsExceptionWithInvalidConfigFormat(
+        string $fileName,
+        string $expectedExceptionMessage
+    ): void {
         $invalidJsonConfigPath = $this->examplesConfigBasePath
             . DIRECTORY_SEPARATOR . 'invalid-json'
             . DIRECTORY_SEPARATOR . $fileName;
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(CannotParseConfigException::class);
         $this->expectExceptionMessage($expectedExceptionMessage);
 
         JSONConfigParser::parse($invalidJsonConfigPath);
