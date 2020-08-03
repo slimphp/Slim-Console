@@ -10,10 +10,10 @@ declare(strict_types=1);
 
 namespace Slim\Tests\Console\Config;
 
-use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionProperty;
 use Slim\Console\Config\Config;
+use Slim\Console\Exception\ConfigValidationException;
 use Slim\Tests\Console\TestCase;
 
 use function array_merge;
@@ -106,7 +106,7 @@ class ConfigTest extends TestCase
 
         $params = array_merge($defaults, [$param => $value]);
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(ConfigValidationException::class);
         $this->expectExceptionMessage("`{$param}` must be a string.");
 
         $validateMethod->invoke(null, $params);

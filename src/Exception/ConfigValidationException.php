@@ -10,6 +10,6 @@ declare(strict_types=1);
 
 namespace Slim\Console\Exception;
 
-class CannotParseConfigException extends ConfigException
+class ConfigValidationException extends ConfigException
 {
 }

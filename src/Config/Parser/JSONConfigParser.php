@@ -10,8 +10,8 @@ declare(strict_types=1);
 
 namespace Slim\Console\Config\Parser;
 
-use InvalidArgumentException;
 use Slim\Console\Config\Config;
+use Slim\Console\Exception\CannotParseConfigException;
 
 use function file_get_contents;
 use function is_array;
@@ -32,13 +32,13 @@ class JSONConfigParser implements ConfigParserInterface
         $parsed = json_decode($contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidArgumentException(
+            throw new CannotParseConfigException(
                 'Invalid JSON parsed from Slim Console configuration. ' . json_last_error_msg()
             );
         }
 
         if (!is_array($parsed)) {
-            throw new InvalidArgumentException('Slim Console configuration should be an array.');
+            throw new CannotParseConfigException('Slim Console configuration should be an array.');
         }
 
         return Config::fromArray($parsed);

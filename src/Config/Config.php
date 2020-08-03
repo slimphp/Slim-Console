@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Slim\Console\Config;
 
-use InvalidArgumentException;
+use Slim\Console\Exception\ConfigValidationException;
 
 use function array_merge;
 use function ctype_space;
@@ -133,7 +133,7 @@ class Config
     /**
      * @param array<string, string> $params
      *
-     * @throws InvalidArgumentException
+     * @throws ConfigValidationException
      */
     protected static function validate(array $params): void
     {
@@ -146,23 +146,23 @@ class Config
         ] = $params;
 
         if (!is_string($bootstrapDir) || empty($bootstrapDir) || ctype_space($bootstrapDir)) {
-            throw new InvalidArgumentException('`bootstrapDir` must be a string.');
+            throw new ConfigValidationException('`bootstrapDir` must be a string.');
         }
 
         if (!is_string($indexDir) || empty($indexDir) || ctype_space($indexDir)) {
-            throw new InvalidArgumentException('`indexDir` must be a string.');
+            throw new ConfigValidationException('`indexDir` must be a string.');
         }
 
         if (!is_string($indexFile) || empty($indexFile) || ctype_space($indexFile)) {
-            throw new InvalidArgumentException('`indexFile` must be a string.');
+            throw new ConfigValidationException('`indexFile` must be a string.');
         }
 
         if (!is_string($sourceDir) || empty($sourceDir) || ctype_space($sourceDir)) {
-            throw new InvalidArgumentException('`sourceDir` must be a string.');
+            throw new ConfigValidationException('`sourceDir` must be a string.');
         }
 
         if (!empty($commandsDir) && (!is_string($commandsDir) || ctype_space($commandsDir))) {
-            throw new InvalidArgumentException('`commandsDir` must be a string.');
+            throw new ConfigValidationException('`commandsDir` must be a string.');
         }
     }
 
@@ -171,7 +171,7 @@ class Config
      *
      * @return Config
      *
-     * @throws InvalidArgumentException
+     * @throws ConfigValidationException
      */
     public static function fromArray(array $params): Config
     {
@@ -191,7 +191,7 @@ class Config
     /**
      * @return Config
      *
-     * @throws InvalidArgumentException
+     * @throws ConfigValidationException
      */
     public static function fromEnvironment(): Config
     {
