@@ -8,6 +8,7 @@
 
 namespace Slim\Console\Command\Initializer\Util;
 
+use InvalidArgumentException;
 use function file_get_contents;
 use function file_put_contents;
 use function is_file;
@@ -29,11 +30,13 @@ class FileBuilder
      * FileBuilder constructor.
      *
      * @param string $templatePath Template file path.
+     *
+     * @throws InvalidArgumentException
      */
     public function __construct(string $templatePath)
     {
         if (!is_file($templatePath)) {
-            throw new \InvalidArgumentException("File `{$templatePath}` not found!");
+            throw new InvalidArgumentException("File `{$templatePath}` not found!");
         }
 
         $this->template = file_get_contents($templatePath);
