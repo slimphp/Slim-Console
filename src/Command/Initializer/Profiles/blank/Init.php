@@ -601,7 +601,7 @@ class Init extends AbstractInitProfile
         ];
 
         if (!$this->useDefaultSetup) {
-            if ($this->io->confirm('Do you want to configure the PSR-7 HTTP message interface?')) {
+            if ($this->io->confirm('Would you like to choose a PSR-7 implementation?')) {
                 $psr7 = $this->io->choice(
                     'Select PSR-7 implementation',
                     array_keys($availableDependencies['psr7']),
@@ -611,7 +611,7 @@ class Init extends AbstractInitProfile
                 $dependencies['psr7'] = $availableDependencies['psr7'][$psr7];
             }
 
-            if ($this->io->confirm('Do you want to configure Dependency Container?')) {
+            if ($this->io->confirm('Would you like to configure a dependency injection container?')) {
                 $dependencyContainer = $this->io->choice(
                     'Select Dependency Container',
                     array_keys($availableDependencies['dependencyContainer']),
@@ -622,14 +622,8 @@ class Init extends AbstractInitProfile
                     $availableDependencies['dependencyContainer'][$dependencyContainer];
             }
 
-            if ($this->io->confirm('Do you want to use PSR-3 Logger?')) {
-                $logger = $this->io->choice(
-                    'Select PSR-3 Logger',
-                    array_keys($availableDependencies['logger']),
-                    MonologDependency::NAME
-                );
-
-                $dependencies['logger'] = $availableDependencies['logger'][$logger];
+            if ($this->io->confirm('Would you like to configure a logger?')) {
+                $dependencies['logger'] = $availableDependencies['logger'][MonologDependency::NAME];
             }
         }
 
