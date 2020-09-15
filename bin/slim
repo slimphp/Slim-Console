@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Slim\Console\App;
+use Slim\Console\Command\Initializer\InitCommand;
 use Slim\Console\Config\ConfigResolver;
 use Slim\Console\Exception\ConfigException;
 use Symfony\Component\Console\Input\StringInput;
@@ -38,4 +39,14 @@ try {
 }
 
 $app = new App($config);
+
+$app->addCommands(
+    [
+        new InitCommand(),
+    ]
+);
+
+unset($cwd);
+unset($config);
+
 $app->run();

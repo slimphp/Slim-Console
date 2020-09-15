@@ -1,0 +1,10 @@
+
+    // Global Settings Object
+    $container->set(
+        'settings',
+        function () {
+            return (object)[
+                'displayErrorDetails' => true, // Should be set to false in production{logger_settings}
+            ];
+        }
+    );
