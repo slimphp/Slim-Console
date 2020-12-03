@@ -24,7 +24,7 @@
   "require": {
     "ext-json": "*",
     "php": "^7.2",
-    "symfony/console": "^5.1"
+    "symfony/console": "^5.2"
   },
   "require-dev": {
     "adriansuter/php-autoload-override": "^1.2",
