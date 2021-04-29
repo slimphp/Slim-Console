@@ -28,7 +28,7 @@
   },
   "require-dev": {
     "adriansuter/php-autoload-override": "^1.2",
-    "phpspec/prophecy": "^1.12",
+    "phpspec/prophecy": "^1.13",
     "phpstan/phpstan": "^0.12.80",
     "phpunit/phpunit": "^8.5",
     "squizlabs/php_codesniffer": "^3.5"
