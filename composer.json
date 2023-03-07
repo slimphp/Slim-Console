@@ -27,7 +27,7 @@
     "symfony/console": "^5.4"
   },
   "require-dev": {
-    "adriansuter/php-autoload-override": "^1.2",
+    "adriansuter/php-autoload-override": "^1.4",
     "phpspec/prophecy": "^1.17",
     "phpstan/phpstan": "^1.9.14",
     "phpunit/phpunit": "^8.5",
